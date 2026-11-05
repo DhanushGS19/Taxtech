@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   Copy,
   BookOpen,
-  ArrowRight
+  ArrowRight,
+  Info
 } from 'lucide-react';
 
 interface AuditHealthTabProps {
@@ -20,69 +21,70 @@ export const AuditHealthTab: React.FC<AuditHealthTabProps> = ({ onSelectTransact
   const unresolved = anomalies.filter(a => !a.resolved);
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 animate-fadeIn text-[#172033]">
       <div>
-        <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-          <ShieldAlert className="w-6 h-6 text-emerald-600" />
-          <span>Tax Health Score & Compliance Audit</span>
-        </h2>
-        <p className="text-xs text-slate-500">
-          Proactively monitors cash deposit thresholds, Section 56(2)(x) gifts, and duplicate records.
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#5F259F]/10 text-[#5F259F] text-xs font-bold border border-[#5F259F]/20 mb-1">
+          <ShieldAlert className="w-3.5 h-3.5" />
+          <span>Statutory Audit Engine</span>
+        </div>
+        <h1 className="text-xl sm:text-2xl font-black text-[#172033]">
+          Tax Compliance Health & Anomaly Audit
+        </h1>
+        <p className="text-xs text-[#718096]">
+          Monitors high-value transactions, cash deposit limits, Section 56(2)(x) relative gifts, and duplicate records.
         </p>
       </div>
 
       {/* Tax Health Score Card */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-1 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-full flex flex-col items-center justify-center text-white">
-                <span className="text-3xl font-black text-emerald-400">{healthScore.score}</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Grade {healthScore.grade}</span>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-2xl bg-[#5F259F]/10 border border-[#5F259F]/20 flex flex-col items-center justify-center shrink-0">
+              <span className="text-2xl font-black text-[#5F259F]">{healthScore.score}</span>
+              <span className="text-[10px] text-[#718096] font-bold uppercase">Grade {healthScore.grade}</span>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-900">Compliance Readiness</h3>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                <h2 className="text-base font-extrabold text-[#172033]">Compliance Readiness Score</h2>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#16A36A]/10 text-[#16A36A]">
                   {healthScore.grade === 'A+' || healthScore.grade === 'A' ? 'Excellent' : 'Action Recommended'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 max-w-md">
+              <p className="text-xs text-[#718096] max-w-md">
                 Resolving flagged items ensures your ITR return passes CPC automated processing without Section 143(1) notices.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-xs shrink-0">
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-              <div className="text-slate-400 text-[10px]">Records Completeness</div>
-              <div className="font-bold text-slate-800 mt-0.5">{healthScore.breakdown.recordCompleteness}/25</div>
+          <div className="grid grid-cols-2 gap-2.5 text-xs shrink-0">
+            <div className="p-3 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0]">
+              <div className="text-[#718096] text-[10px]">Records Completeness</div>
+              <div className="font-bold text-[#172033] mt-0.5">{healthScore.breakdown.recordCompleteness}/25</div>
             </div>
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-              <div className="text-slate-400 text-[10px]">Anomaly Resolution</div>
-              <div className="font-bold text-slate-800 mt-0.5">{healthScore.breakdown.anomalyResolution}/25</div>
+            <div className="p-3 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0]">
+              <div className="text-[#718096] text-[10px]">Anomaly Resolution</div>
+              <div className="font-bold text-[#172033] mt-0.5">{healthScore.breakdown.anomalyResolution}/25</div>
             </div>
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-              <div className="text-slate-400 text-[10px]">Deductions Optimized</div>
-              <div className="font-bold text-slate-800 mt-0.5">{healthScore.breakdown.deductionOptimization}/25</div>
+            <div className="p-3 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0]">
+              <div className="text-[#718096] text-[10px]">Deductions Optimized</div>
+              <div className="font-bold text-[#172033] mt-0.5">{healthScore.breakdown.deductionOptimization}/25</div>
             </div>
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-              <div className="text-slate-400 text-[10px]">Filing Readiness</div>
-              <div className="font-bold text-slate-800 mt-0.5">{healthScore.breakdown.complianceFilingReady}/25</div>
+            <div className="p-3 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0]">
+              <div className="text-[#718096] text-[10px]">Filing Readiness</div>
+              <div className="font-bold text-[#172033] mt-0.5">{healthScore.breakdown.complianceFilingReady}/25</div>
             </div>
           </div>
         </div>
 
         {healthScore.recommendations.length > 0 && (
-          <div className="mt-5 pt-4 border-t border-slate-100 space-y-1.5">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+          <div className="pt-4 border-t border-[#E2E8F0] space-y-1.5">
+            <span className="text-[11px] font-bold text-[#718096] uppercase tracking-wider block">
               Health Recommendations:
             </span>
             {healthScore.recommendations.map((rec, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <div key={i} className="flex items-center gap-2 text-xs text-[#172033]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#16A36A] shrink-0" />
                 <span>{rec}</span>
               </div>
             ))}
@@ -92,79 +94,76 @@ export const AuditHealthTab: React.FC<AuditHealthTabProps> = ({ onSelectTransact
 
       {/* Flagged Anomalies */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+        <h3 className="text-sm font-extrabold text-[#172033] flex items-center gap-2">
           <span>Flagged Risk Items</span>
           <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
-            {unresolved.length} active
+            {unresolved.length} Active
           </span>
         </h3>
 
         {unresolved.length === 0 ? (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 text-center space-y-2">
-            <ShieldCheck className="w-10 h-10 text-emerald-600 mx-auto" />
-            <h4 className="text-sm font-bold text-emerald-950">No Anomalies Detected!</h4>
-            <p className="text-xs text-emerald-800">All payment records conform to Indian tax limits.</p>
+          <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] text-center space-y-2">
+            <CheckCircle2 className="w-8 h-8 text-[#16A36A] mx-auto" />
+            <h4 className="text-sm font-bold text-[#172033]">All Clear! No Flagged Audit Risks</h4>
+            <p className="text-xs text-[#718096]">Your transactions comply with SFT reporting thresholds.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {unresolved.map(anom => (
               <div
                 key={anom.id}
-                className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3"
+                className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-xs space-y-3"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-rose-50 text-rose-600 shrink-0 mt-0.5">
-                      <AlertTriangle className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-sm font-bold text-slate-900">{anom.title}</h4>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800">
-                          {anom.severity} RISK
-                        </span>
-                        <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded font-mono">
-                          {anom.taxSection}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 mt-1">{anom.description}</p>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      anom.severity === 'HIGH'
+                        ? 'bg-rose-100 text-rose-800'
+                        : anom.severity === 'MEDIUM'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {anom.severity} RISK
+                    </span>
+                    <h4 className="text-xs font-extrabold text-[#172033]">{anom.title}</h4>
                   </div>
-
-                  <button
-                    onClick={() => resolveAnomaly(anom.id)}
-                    className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold whitespace-nowrap"
-                  >
-                    Mark Verified
-                  </button>
+                  <span className="text-xs font-mono font-bold text-[#718096]">
+                    {anom.category.replace('_', ' ')}
+                  </span>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-2xl text-xs text-slate-700 space-y-1">
-                  <div className="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>CA Guidance:</span>
-                  </div>
-                  <p>{anom.recommendation}</p>
-                </div>
+                <p className="text-xs text-[#718096] leading-relaxed">
+                  {anom.description}
+                </p>
 
-                {anom.transactionId && (
-                  <div className="flex items-center justify-between text-xs pt-1">
-                    <button
-                      onClick={() => onSelectTransaction(anom.transactionId!)}
-                      className="text-indigo-600 hover:underline font-semibold"
-                    >
-                      View Transaction & Location Details →
-                    </button>
-                    {anom.category === 'DUPLICATE' && (
-                      <button
-                        onClick={() => resolveDuplicate(anom.transactionId!)}
-                        className="text-rose-600 hover:underline font-semibold"
-                      >
-                        Delete Duplicate Entry
-                      </button>
-                    )}
+                {anom.taxSection && (
+                  <div className="p-3 bg-[#F8F9FC] rounded-xl text-[11px] text-[#718096] flex items-center gap-2 border border-[#E2E8F0]">
+                    <BookOpen className="w-3.5 h-3.5 text-[#5F259F] shrink-0" />
+                    <span>Statutory Reference: {anom.taxSection}</span>
                   </div>
                 )}
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#E2E8F0]">
+                  <span className="text-[11px] text-[#718096]">
+                    Recommended Action: <strong>{anom.recommendation}</strong>
+                  </span>
+                  <div className="flex gap-2">
+                    {anom.transactionId && (
+                      <button
+                        onClick={() => onSelectTransaction(anom.transactionId!)}
+                        className="px-3 py-1.5 rounded-xl bg-[#F8F9FC] hover:bg-slate-100 text-[#172033] text-xs font-bold border border-[#E2E8F0] transition-colors"
+                      >
+                        View Transaction
+                      </button>
+                    )}
+                    <button
+                      onClick={() => resolveAnomaly(anom.id)}
+                      className="px-3 py-1.5 rounded-xl bg-[#5F259F] hover:bg-[#35145F] text-white text-xs font-bold transition-all"
+                    >
+                      Mark as Verified
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

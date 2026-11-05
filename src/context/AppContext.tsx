@@ -31,6 +31,13 @@ interface AppContextType {
   setActiveFace: (face: AppFace) => void;
   accountBalance: number;
   monthlyIncome: number;
+  isPrivacyMode: boolean;
+  togglePrivacyMode: () => void;
+  isBalanceRevealed: boolean;
+  setIsBalanceRevealed: (revealed: boolean) => void;
+  isCheckBalanceOpen: boolean;
+  setIsCheckBalanceOpen: (open: boolean) => void;
+  formatPrivateAmount: (amount: number, forceShow?: boolean) => string;
   goldBalanceGrams: number;
   goldRatePerGram: number;
   profiles: FamilyProfile[];
@@ -92,6 +99,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeFace, setActiveFace] = useState<AppFace>('TECHPAY');
   const [accountBalance, setAccountBalance] = useState<number>(64850);
   const [monthlyIncome, setMonthlyIncome] = useState<number>(150000);
+
+  // Privacy & Balance Masking (PhonePe / Google Pay Reference)
+  const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('tp_privacy_mode');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [isBalanceRevealed, setIsBalanceRevealed] = useState<boolean>(false);
+  const [isCheckBalanceOpen, setIsCheckBalanceOpen] = useState<boolean>(false);
+
+  const togglePrivacyMode = () => {
+    setIsPrivacyMode(prev => {
+      const next = !prev;
+      localStorage.setItem('tp_privacy_mode', JSON.stringify(next));
+      if (next) {
+        setIsBalanceRevealed(false);
+      }
+      return next;
+    });
+  };
+
+  const formatPrivateAmount = (amount: number, forceShow: boolean = false): string => {
+    if (!isPrivacyMode || forceShow) {
+      return `₹${amount.toLocaleString('en-IN')}`;
+    }
+    return '₹••••••';
+  };
+
   const [goldBalanceGrams, setGoldBalanceGrams] = useState<number>(4.25);
   const [goldRatePerGram, setGoldRatePerGram] = useState<number>(7865);
 
@@ -524,6 +558,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveFace,
         accountBalance,
         monthlyIncome,
+        isPrivacyMode,
+        togglePrivacyMode,
+        isBalanceRevealed,
+        setIsBalanceRevealed,
+        isCheckBalanceOpen,
+        setIsCheckBalanceOpen,
+        formatPrivateAmount,
         goldBalanceGrams,
         goldRatePerGram,
         profiles,

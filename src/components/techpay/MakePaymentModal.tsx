@@ -490,3 +490,4 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
     </div>
   );
 };
+

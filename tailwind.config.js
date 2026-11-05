@@ -7,6 +7,20 @@ export default {
   theme: {
     extend: {
       colors: {
+        fintech: {
+          primary: '#5F259F', // Deep Royal Purple
+          secondary: '#35145F', // Dark Violet
+          dark: '#172033', // Dark Navy primary text
+          slate: '#718096', // Slate Grey secondary text
+          light: '#7A38BE',
+          soft: '#F3EEF9',
+          bg: '#F8F9FC', // Soft Neutral
+          card: '#FFFFFF',
+          success: '#16A36A', // Green
+          warning: '#E9A23B', // Amber
+          danger: '#DC2626',
+          border: '#E2E8F0'
+        },
         pay: {
           50: '#eef2ff',
           100: '#e0e7ff',
@@ -39,3 +53,4 @@ export default {
   },
   plugins: [],
 }
+

@@ -241,3 +241,4 @@ export const VoiceCaModal: React.FC<VoiceCaModalProps> = ({ isOpen, onClose }) =
     </div>
   );
 };
+

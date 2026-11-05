@@ -64,7 +64,7 @@ export const AutoPayTab: React.FC = () => {
 
         <button
           onClick={() => setIsAddOpen(true)}
-          className="px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all self-start sm:self-auto"
+          className="px-4 py-2 rounded-2xl bg-[#5F259F] hover:bg-[#38146B] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>New AutoPay Mandate</span>
@@ -80,7 +80,7 @@ export const AutoPayTab: React.FC = () => {
               key={m.id}
               className={`p-6 rounded-3xl border transition-all ${
                 isActive
-                  ? 'bg-white border-slate-200 shadow-sm hover:border-indigo-300'
+                  ? 'bg-white border-slate-200 shadow-sm hover:border-[#5F259F]/40'
                   : 'bg-slate-50 border-slate-200 opacity-60'
               }`}
             >
@@ -117,7 +117,7 @@ export const AutoPayTab: React.FC = () => {
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
-                  <Clock className="w-3.5 h-3.5 text-indigo-600" />
+                  <Clock className="w-3.5 h-3.5 text-[#5F259F]" />
                   <span>Next debit: <strong>{m.nextDebitDate}</strong></span>
                 </div>
 
@@ -205,7 +205,7 @@ export const AutoPayTab: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md mt-2"
+                className="w-full py-2.5 rounded-xl bg-[#5F259F] hover:bg-[#38146B] text-white font-bold text-xs shadow-md mt-2"
               >
                 Authorize NPCI e-Mandate
               </button>
@@ -216,3 +216,4 @@ export const AutoPayTab: React.FC = () => {
     </div>
   );
 };
+

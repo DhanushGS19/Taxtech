@@ -1,33 +1,50 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   QrCode,
-  Send,
-  Users,
+  Smartphone,
   Building2,
-  Receipt,
+  Send,
+  ArrowRightLeft,
   Lock,
-  AlertTriangle,
-  ArrowDownLeft,
-  ArrowUpRight,
-  MapPin,
-  TrendingUp,
-  Sparkles,
-  ShieldCheck,
+  Search,
+  Zap,
+  Droplets,
+  Wifi,
+  Flame,
+  CreditCard,
+  Shield,
+  GraduationCap,
+  Scale,
+  Calculator,
+  ArrowRight,
   CheckCircle2,
   Clock,
-  ArrowRight
+  MapPin,
+  Calendar,
+  AlertTriangle,
+  ChevronRight,
+  TrendingUp,
+  Coins,
+  Copy,
+  Check
 } from 'lucide-react';
+
+import { ReceiveMoneyModal } from './ReceiveMoneyModal';
+import { RequestMoneyModal } from './RequestMoneyModal';
+import { BillPaymentModal, BillCategoryType } from './BillPaymentModal';
+import { GstCalculatorModal } from './GstCalculatorModal';
+import { IncomeTaxModal } from './IncomeTaxModal';
 
 interface PaymentHomeProps {
   onOpenMakePayment: (defaultRecipient?: { name: string; upiId: string; amount?: number; category?: string; location?: any }) => void;
-  onNavigateSubtab: (subtab: string) => void;
+  onNavigateSection: (section: string) => void;
   onSelectTransaction: (txId: string) => void;
 }
 
 export const PaymentHome: React.FC<PaymentHomeProps> = ({
   onOpenMakePayment,
-  onNavigateSubtab,
+  onNavigateSection,
   onSelectTransaction
 }) => {
   const {
@@ -37,416 +54,432 @@ export const PaymentHome: React.FC<PaymentHomeProps> = ({
     unpaidLockedAmount,
     safeDiscretionaryBudget,
     currentDiscretionarySpent,
-    overspendingAlert,
     commitments,
     transactions,
     activeProfile,
-    goldBalanceGrams,
-    goldRatePerGram
+    setIsCheckBalanceOpen,
+    formatPrivateAmount
   } = useApp();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  // Modals state
+  const [isReceiveOpen, setIsReceiveOpen] = useState(false);
+  const [isRequestOpen, setIsRequestOpen] = useState(false);
+  const [billModalCategory, setBillModalCategory] = useState<BillCategoryType | null>(null);
+  const [isGstOpen, setIsGstOpen] = useState(false);
+  const [isTaxCalcOpen, setIsTaxCalcOpen] = useState(false);
 
   const freeSpendingRemaining = Math.max(0, safeDiscretionaryBudget - currentDiscretionarySpent);
   const percentSpent = safeDiscretionaryBudget > 0
     ? Math.min(100, Math.round((currentDiscretionarySpent / safeDiscretionaryBudget) * 100))
     : 0;
 
-  // Recent popular merchants with real Indian locations
-  const quickMerchants = [
-    {
-      name: 'Starbucks Coffee',
-      upiId: 'starbucks.blr@icici',
-      category: 'CAFE',
-      city: 'Bengaluru',
-      street: '100ft Road, Indiranagar',
-      avatar: '☕'
-    },
-    {
-      name: 'Apollo Pharmacy 24/7',
-      upiId: 'apollo.sec18@axisbank',
-      category: 'HEALTH',
-      city: 'Noida',
-      street: 'Sector 18 Market',
-      avatar: '💊'
-    },
-    {
-      name: 'D-Mart Hypermarket',
-      upiId: 'dmart.hinjewadi@yesbank',
-      category: 'GROCERY',
-      city: 'Pune',
-      street: 'Hinjewadi Link Road',
-      avatar: '🛒'
-    },
-    {
-      name: 'Shell Fuel Station',
-      upiId: 'shell.mgroad@hdfcbank',
-      category: 'FUEL',
-      city: 'Gurugram',
-      street: 'MG Road DLF',
-      avatar: '⛽'
-    },
-    {
-      name: 'Apartment Landlord Rent',
-      upiId: 'landlord.rent@okhdfcbank',
-      category: 'RENT',
-      city: 'Bengaluru',
-      street: 'Koramangala 4th Block',
-      avatar: '🏠'
-    }
+  const handleCopyUpi = () => {
+    navigator.clipboard?.writeText(activeProfile.upiId);
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2000);
+  };
+
+  // 9 Exact Bill Categories specified in requirement #3
+  const billCategories: { id: BillCategoryType; title: string; icon: any }[] = [
+    { id: 'mobile', title: 'Mobile Recharge', icon: Smartphone },
+    { id: 'electricity', title: 'Electricity', icon: Zap },
+    { id: 'water', title: 'Water', icon: Droplets },
+    { id: 'broadband', title: 'Broadband', icon: Wifi },
+    { id: 'gas', title: 'Gas Cylinder', icon: Flame },
+    { id: 'credit-card', title: 'Credit Card', icon: CreditCard },
+    { id: 'loan-emi', title: 'Loan EMI', icon: Building2 },
+    { id: 'insurance', title: 'Insurance', icon: Shield },
+    { id: 'education', title: 'Education Fees', icon: GraduationCap }
   ];
 
-  const recentTxList = transactions.slice(0, 5);
+  // Filtered recent transactions
+  const recentTransactions = useMemo(() => {
+    if (!searchQuery.trim()) return transactions.slice(0, 5);
+    const q = searchQuery.toLowerCase();
+    return transactions.filter(t => 
+      t.recipientName.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q) ||
+      t.location?.city.toLowerCase().includes(q) ||
+      t.amount.toString().includes(q)
+    ).slice(0, 5);
+  }, [transactions, searchQuery]);
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Overspending Critical Warning Banner */}
-      {overspendingAlert && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border-2 border-amber-400 p-4 rounded-2xl shadow-sm text-slate-900 flex items-start justify-between gap-4 animate-fadeIn">
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-amber-500 text-white shrink-0 mt-0.5">
-              <AlertTriangle className="w-5 h-5 animate-bounce" />
-            </div>
-            <div>
-              <h3 className="text-sm font-extrabold text-amber-950">
-                Expenditure Control Reminder (Fixed Budget Protected)
-              </h3>
-              <p className="text-xs text-slate-700 mt-0.5 leading-relaxed">
-                {overspendingAlert}
-              </p>
-              <div className="mt-2 flex items-center gap-2 flex-wrap text-[11px] font-semibold text-slate-800">
-                <span className="bg-white/80 px-2 py-0.5 rounded border border-amber-300">
-                  Locked for Commitments: ₹{totalLockedAmount.toLocaleString('en-IN')}
-                </span>
-                <span className="bg-white/80 px-2 py-0.5 rounded border border-amber-300">
-                  Unpaid EMI & Rent: ₹{unpaidLockedAmount.toLocaleString('en-IN')}
-                </span>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => onNavigateSubtab('vault')}
-            className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs whitespace-nowrap shadow-sm transition-all shrink-0"
-          >
-            Review Locked Vault
-          </button>
+    <div className="space-y-6 animate-fadeIn">
+      {/* 1. Universal Search & Quick UPI Handle Bar */}
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-[#718096] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search contacts, mobile number, merchant name, or billers..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0] text-xs font-medium text-[#172033] placeholder:text-[#718096] focus:outline-none focus:border-[#5F259F] focus:bg-white transition-all"
+          />
         </div>
-      )}
 
-      {/* Hero: Google Pay Style Account Balance & Quick UPI Action Hub */}
-      <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none"></div>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold border border-indigo-500/30 mb-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Verified UPI Linked Bank Account: HDFC Bank *4892</span>
-            </div>
-            <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Available Bank Balance</div>
-            <div className="text-3xl sm:text-4xl font-black text-white mt-1">
-              ₹{accountBalance.toLocaleString('en-IN')}
-            </div>
-            <p className="text-xs text-slate-400 mt-1 font-mono">
-              UPI ID: {activeProfile.upiId}
-            </p>
-          </div>
-
-          {/* Quick Pay Action Buttons */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-3 shrink-0">
-            <button
-              onClick={() => onOpenMakePayment()}
-              className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all active:scale-95 text-center group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white mb-1 shadow-md group-hover:scale-105 transition-transform">
-                <QrCode className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-semibold text-slate-200">Scan QR</span>
-            </button>
-
-            <button
-              onClick={() => onOpenMakePayment()}
-              className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all active:scale-95 text-center group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white mb-1 shadow-md group-hover:scale-105 transition-transform">
-                <Send className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-semibold text-slate-200">Pay UPI</span>
-            </button>
-
-            <button
-              onClick={() => onNavigateSubtab('autopay')}
-              className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all active:scale-95 text-center group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white mb-1 shadow-md group-hover:scale-105 transition-transform">
-                <Receipt className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-semibold text-slate-200">AutoPay</span>
-            </button>
-
-            <button
-              onClick={() => onNavigateSubtab('investments')}
-              className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all active:scale-95 text-center group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-bold mb-1 shadow-md group-hover:scale-105 transition-transform">
-                <span>24K</span>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-200">Gold / SIP</span>
-            </button>
-          </div>
+        <div className="flex items-center justify-between sm:justify-end gap-2 px-3 py-2 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0] text-xs">
+          <span className="text-[#718096] text-[11px] font-medium">My UPI ID:</span>
+          <span className="font-mono font-bold text-[#172033]">{activeProfile.upiId}</span>
+          <button
+            onClick={handleCopyUpi}
+            className="p-1 text-[#5F259F] hover:text-[#35145F] transition-colors"
+            title="Copy UPI ID"
+          >
+            {copiedUpi ? <Check className="w-3.5 h-3.5 text-[#16A36A]" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </div>
 
-      {/* CORE INNOVATION: FIXED BUDGET SYSTEM & LOCKED COMMITMENT VAULT */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold">
-                <Lock className="w-4 h-4" />
-              </div>
-              <div>
-                <h2 className="text-base font-extrabold text-slate-900">
-                  Fixed Budget & Locked Expense Vault
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Protects mandatory obligations (EMI, Rent, School Fees, Bills) so you never accidentally overspend.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => onNavigateSubtab('vault')}
-            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 self-start sm:self-auto"
-          >
-            <span>Manage Vault Commitments</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* 3-Tier Budget Flow Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Box 1: Monthly Income */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Net Income</span>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              ₹{monthlyIncome.toLocaleString('en-IN')}
-            </div>
-            <p className="text-[11px] text-slate-500 mt-1">100% of your earnings</p>
-          </div>
-
-          {/* Box 2: Locked Commitments Vault */}
-          <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-900">Locked Vault (Committed)</span>
-              <Lock className="w-3.5 h-3.5 text-indigo-600" />
-            </div>
-            <div className="text-2xl font-black text-indigo-950 mt-1">
-              ₹{totalLockedAmount.toLocaleString('en-IN')}
-            </div>
-            <div className="text-[11px] text-indigo-800 mt-1 font-semibold flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>Pending Unpaid: ₹{unpaidLockedAmount.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
-
-          {/* Box 3: Safe Discretionary Limit */}
-          <div className={`p-4 rounded-2xl border ${
-            freeSpendingRemaining < 5000
-              ? 'bg-amber-50 border-amber-300 text-amber-950'
-              : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-          }`}>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Safe Flexible Allowance</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white/70">
-                {percentSpent}% Used
-              </span>
-            </div>
-            <div className="text-2xl font-black mt-1">
-              ₹{freeSpendingRemaining.toLocaleString('en-IN')}
-            </div>
-            <p className="text-[11px] mt-1 opacity-80">
-              Discretionary spend so far: ₹{currentDiscretionarySpent.toLocaleString('en-IN')}
-            </p>
-          </div>
-        </div>
-
-        {/* Visual Progress Bar of Commitments vs Discretionary */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-[11px] text-slate-600 font-medium">
-            <span>Budget Allocation Breakdown</span>
-            <span>Locked: {Math.round((totalLockedAmount / monthlyIncome) * 100)}% | Free: {100 - Math.round((totalLockedAmount / monthlyIncome) * 100)}%</span>
-          </div>
-          <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex">
-            <div
-              style={{ width: `${(totalLockedAmount / monthlyIncome) * 100}%` }}
-              className="bg-indigo-600 h-full"
-              title="Locked for EMI, Rent, Fees"
-            ></div>
-            <div
-              style={{ width: `${(currentDiscretionarySpent / monthlyIncome) * 100}%` }}
-              className="bg-rose-500 h-full"
-              title="Discretionary Spent"
-            ></div>
-            <div
-              style={{ width: `${(freeSpendingRemaining / monthlyIncome) * 100}%` }}
-              className="bg-emerald-400 h-full"
-              title="Remaining Safe Allowance"
-            ></div>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] text-slate-500 pt-1">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-600"></span> Locked Obligations</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span> Flexible Spent</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400"></span> Safe Remaining</span>
-          </div>
-        </div>
-
-        {/* Locked Commitments Snapshot Pills */}
-        <div className="pt-2 border-t border-slate-100">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-            Locked Bills, EMI & Rent Commitments:
-          </span>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {commitments.map(com => (
-              <div
-                key={com.id}
-                className={`p-2.5 rounded-xl border text-left text-xs ${
-                  com.isPaidThisMonth
-                    ? 'bg-slate-50 border-slate-200 text-slate-500 opacity-60'
-                    : 'bg-indigo-50/50 border-indigo-200 text-slate-800'
-                }`}
-              >
-                <div className="font-bold truncate text-[11px]">{com.title}</div>
-                <div className="font-extrabold text-xs text-indigo-950 mt-0.5">
-                  ₹{com.allocatedAmount.toLocaleString('en-IN')}
-                </div>
-                <div className="text-[10px] text-slate-500 truncate mt-0.5">
-                  {com.isPaidThisMonth ? '✓ Paid' : `In ${com.daysRemaining} days`}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Pay to Popular Verified Indian Merchants with Real Locations */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+      {/* 2. SECTION: MONEY TRANSFERS (Payment-First Experience) */}
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">
-              Pay Nearby & Verified Merchants (Auto-Location Tagging)
-            </h3>
-            <p className="text-xs text-slate-500">
-              One-tap UPI payment with instant street location history & Indian tax classification
-            </p>
-          </div>
-          <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-semibold">
-            Google Pay Style
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#718096]">
+            Money Transfers
+          </h2>
+          <span className="text-[11px] text-[#16A36A] font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#16A36A]"></span>
+            <span>NPCI UPI 2.0 Active</span>
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {quickMerchants.map((m, idx) => (
-            <button
-              key={idx}
-              onClick={() => onOpenMakePayment({
-                name: m.name,
-                upiId: m.upiId,
-                category: m.category,
-                location: {
-                  shopName: m.name,
-                  street: m.street,
-                  city: m.city,
-                  state: 'India',
-                  latitude: 12.97,
-                  longitude: 77.64,
-                  category: m.category as any
-                }
-              })}
-              className="p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all text-left bg-slate-50/50 hover:bg-white group"
-            >
-              <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-lg mb-2 group-hover:scale-105 transition-transform">
-                {m.avatar}
+        {/* 7 Clean Payment Actions (Scan & Pay has strongest visual emphasis) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          {/* 1. Scan & Pay (STRONGEST VISUAL EMPHASIS) */}
+          <button
+            onClick={() => onNavigateSection('scan')}
+            className="col-span-2 sm:col-span-2 lg:col-span-1 p-4 rounded-xl bg-gradient-to-br from-[#5F259F] to-[#35145F] text-white shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all text-left flex flex-col justify-between group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center text-white">
+              <QrCode className="w-6 h-6" />
+            </div>
+            <div className="mt-4">
+              <div className="text-sm font-extrabold text-white flex items-center justify-between">
+                <span>Scan & Pay</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </div>
-              <div className="font-bold text-xs text-slate-900 truncate">{m.name}</div>
-              <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 truncate">
-                <MapPin className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
-                <span>{m.city}</span>
-              </div>
-              <div className="text-[9px] text-indigo-600 font-semibold mt-1">Tap to Pay</div>
-            </button>
-          ))}
+              <div className="text-[11px] text-purple-200 mt-0.5">Any UPI QR</div>
+            </div>
+          </button>
+
+          {/* 2. Check Balance */}
+          <button
+            onClick={() => setIsCheckBalanceOpen(true)}
+            className="p-3.5 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] border border-[#E2E8F0] hover:border-[#5F259F]/30 text-left transition-all active:scale-95 flex flex-col justify-between group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-[#16A36A] border border-emerald-100 flex items-center justify-center">
+              <Lock className="w-4 h-4" />
+            </div>
+            <div className="mt-3">
+              <div className="text-xs font-bold text-[#172033] group-hover:text-[#5F259F]">Check Balance</div>
+              <div className="text-[10px] text-[#718096] mt-0.5 font-mono">HDFC ••4892</div>
+            </div>
+          </button>
+
+          {/* 3. Send Money */}
+          <button
+            onClick={() => onOpenMakePayment({ name: 'Rahul Sharma', upiId: '9876543210@paytm' })}
+            className="p-3.5 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] border border-[#E2E8F0] hover:border-[#5F259F]/30 text-left transition-all active:scale-95 flex flex-col justify-between group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-purple-50 text-[#5F259F] border border-purple-100 flex items-center justify-center">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div className="mt-3">
+              <div className="text-xs font-bold text-[#172033] group-hover:text-[#5F259F]">Send Money</div>
+              <div className="text-[10px] text-[#718096] mt-0.5">To Mobile No.</div>
+            </div>
+          </button>
+
+          {/* 4. Bank Transfer */}
+          <button
+            onClick={() => onOpenMakePayment({ name: 'HDFC Bank Account Transfer', upiId: 'account.transfer@hdfcbank' })}
+            className="p-3.5 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] border border-[#E2E8F0] hover:border-[#5F259F]/30 text-left transition-all active:scale-95 flex flex-col justify-between group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 flex items-center justify-center">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <div className="mt-3">
+              <div className="text-xs font-bold text-[#172033] group-hover:text-[#5F259F]">Bank Transfer</div>
+              <div className="text-[10px] text-[#718096] mt-0.5">A/c No & IFSC</div>
+            </div>
+          </button>
+
+          {/* 5. UPI ID */}
+          <button
+            onClick={() => onOpenMakePayment()}
+            className="p-3.5 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] border border-[#E2E8F0] hover:border-[#5F259F]/30 text-left transition-all active:scale-95 flex flex-col justify-between group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-violet-50 text-[#5F259F] border border-violet-100 flex items-center justify-center">
+              <Send className="w-4 h-4" />
+            </div>
+            <div className="mt-3">
+              <div className="text-xs font-bold text-[#172033] group-hover:text-[#5F259F]">UPI ID</div>
+              <div className="text-[10px] text-[#718096] mt-0.5">Instant VPA</div>
+            </div>
+          </button>
+
+          {/* 6. Self Transfer */}
+          <button
+            onClick={() => onOpenMakePayment({ name: 'Self Savings Account', upiId: 'self.savings@icici' })}
+            className="p-3.5 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] border border-[#E2E8F0] hover:border-[#5F259F]/30 text-left transition-all active:scale-95 flex flex-col justify-between group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-amber-50 text-[#E9A23B] border border-amber-100 flex items-center justify-center">
+              <ArrowRightLeft className="w-4 h-4" />
+            </div>
+            <div className="mt-3">
+              <div className="text-xs font-bold text-[#172033] group-hover:text-[#5F259F]">Self Transfer</div>
+              <div className="text-[10px] text-[#718096] mt-0.5">Own Accounts</div>
+            </div>
+          </button>
+
+          {/* 7. Request Money */}
+          <button
+            onClick={() => setIsRequestOpen(true)}
+            className="p-3.5 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] border border-[#E2E8F0] hover:border-[#5F259F]/30 text-left transition-all active:scale-95 flex flex-col justify-between group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-slate-100 text-[#172033] border border-slate-200 flex items-center justify-center">
+              <Send className="w-4 h-4 rotate-180" />
+            </div>
+            <div className="mt-3">
+              <div className="text-xs font-bold text-[#172033] group-hover:text-[#5F259F]">Request Money</div>
+              <div className="text-[10px] text-[#718096] mt-0.5">UPI Collect</div>
+            </div>
+          </button>
         </div>
       </div>
 
-      {/* Recent Payments with Location History & Tax Relevance */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+      {/* 3. SECTION: RECHARGE & BILLS (9 Categories) */}
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Recent Payment & Location History</h3>
-            <p className="text-xs text-slate-500">
-              Shows where every payment occurred and its tax deduction/income status
-            </p>
-          </div>
-
-          <button
-            onClick={() => onNavigateSubtab('history')}
-            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
-          >
-            <span>View All with Map ({transactions.length})</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#718096]">
+            Recharge & Bill Payments
+          </h2>
+          <span className="text-[11px] text-[#718096] font-medium">Bharat BillPay (BBPS)</span>
         </div>
 
-        <div className="divide-y divide-slate-100">
-          {recentTxList.map(tx => {
-            const isCredit = tx.type === 'CREDIT';
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-3">
+          {billCategories.map((b) => {
+            const Icon = b.icon;
             return (
-              <div
-                key={tx.id}
-                onClick={() => onSelectTransaction(tx.id)}
-                className="py-3.5 flex items-center justify-between gap-4 hover:bg-slate-50/80 px-2 rounded-xl cursor-pointer transition-colors"
+              <button
+                key={b.id}
+                onClick={() => setBillModalCategory(b.id)}
+                className="flex flex-col items-center text-center p-3 rounded-xl hover:bg-[#F8F9FC] border border-transparent hover:border-[#E2E8F0] transition-all group"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                    isCredit ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
-                  }`}>
-                    {isCredit ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-slate-900 truncate">
-                      {tx.recipientName || tx.description}
-                    </div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1 truncate mt-0.5">
-                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                      <span>{tx.location.shopName}, {tx.location.city}</span>
-                      <span>• {tx.date}</span>
-                    </div>
-                  </div>
+                <div className="w-11 h-11 rounded-xl bg-[#F8F9FC] group-hover:bg-[#F3EEF9] border border-[#E2E8F0] flex items-center justify-center text-[#5F259F] group-hover:scale-105 transition-all">
+                  <Icon className="w-5 h-5" />
                 </div>
-
-                <div className="text-right shrink-0">
-                  <div className={`text-xs font-black ${isCredit ? 'text-emerald-600' : 'text-slate-900'}`}>
-                    {isCredit ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
-                  </div>
-                  <div className="flex items-center justify-end gap-1 mt-1">
-                    <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                      tx.classification.status === 'TAX_DEDUCTIBLE'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : tx.classification.status === 'TAXABLE'
-                        ? 'bg-rose-100 text-rose-800'
-                        : tx.classification.status === 'PARTIALLY_TAXABLE'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {tx.classification.deductionSection || tx.classification.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                <span className="text-[11px] font-bold text-[#172033] mt-2 leading-tight group-hover:text-[#5F259F]">
+                  {b.title}
+                </span>
+              </button>
             );
           })}
         </div>
       </div>
+
+      {/* 4. SECTION: FINANCIAL OVERVIEW & MONTHLY EXPENSES */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Income Card */}
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096]">Monthly Net Income</span>
+          <div className="text-xl font-extrabold text-[#172033] mt-1">₹{monthlyIncome.toLocaleString('en-IN')}</div>
+          <p className="text-[11px] text-[#718096] mt-0.5">Verified salary & credited cash flow</p>
+        </div>
+
+        {/* Expenses Burn Rate */}
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096]">Discretionary Spent</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-[#172033]">{percentSpent}% used</span>
+          </div>
+          <div className="text-xl font-extrabold text-[#172033] mt-1">₹{currentDiscretionarySpent.toLocaleString('en-IN')}</div>
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2">
+            <div style={{ width: `${percentSpent}%` }} className="bg-[#5F259F] h-full rounded-full"></div>
+          </div>
+        </div>
+
+        {/* Safe Discretionary Remaining */}
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#16A36A]">Safe Spending Allowance</span>
+          <div className="text-xl font-extrabold text-[#16A36A] mt-1">₹{freeSpendingRemaining.toLocaleString('en-IN')}</div>
+          <p className="text-[11px] text-[#718096] mt-0.5">Protected from locked vault obligations</p>
+        </div>
+      </div>
+
+      {/* 5. SECTION: RECENT TRANSACTIONS & UPCOMING COMMITMENTS (2-Column Grid) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Cols: Recent Transactions */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div>
+              <h3 className="text-sm font-extrabold text-[#172033]">Recent Transactions</h3>
+              <p className="text-[11px] text-[#718096]">Real-world merchant & location tagged</p>
+            </div>
+            <button
+              onClick={() => onNavigateSection('history')}
+              className="text-xs font-bold text-[#5F259F] hover:text-[#35145F] flex items-center gap-1 transition-colors"
+            >
+              <span>View All</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {recentTransactions.map((tx) => {
+              const isCredit = tx.type === 'CREDIT';
+              return (
+                <div
+                  key={tx.id}
+                  onClick={() => onSelectTransaction(tx.id)}
+                  className="py-3 px-2 rounded-xl hover:bg-[#F8F9FC] transition-colors flex items-center justify-between gap-3 cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                      isCredit ? 'bg-emerald-50 text-[#16A36A] border border-emerald-100' : 'bg-[#F3EEF9] text-[#5F259F] border border-[#5F259F]/15'
+                    }`}>
+                      {tx.recipientName.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs text-[#172033] group-hover:text-[#5F259F] transition-colors flex items-center gap-1.5">
+                        <span>{tx.recipientName || tx.description}</span>
+                        <CheckCircle2 className="w-3 h-3 text-[#16A36A]" />
+                      </div>
+                      <div className="text-[11px] text-[#718096] flex items-center gap-1.5 mt-0.5">
+                        <span>{tx.date} • {tx.time}</span>
+                        {tx.location?.city && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-0.5 text-slate-500">
+                              <MapPin className="w-3 h-3 text-[#5F259F]" />
+                              {tx.location.city}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <div className={`text-sm font-extrabold ${isCredit ? 'text-[#16A36A]' : 'text-[#172033]'}`}>
+                      {isCredit ? '+' : '-'} ₹{tx.amount.toLocaleString('en-IN')}
+                    </div>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-[#718096]">
+                      Successful
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right 1 Col: Upcoming Payments (Commitments Vault) */}
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div>
+              <h3 className="text-sm font-extrabold text-[#172033]">Upcoming Commitments</h3>
+              <p className="text-[11px] text-[#718096]">₹{totalLockedAmount.toLocaleString('en-IN')} safely reserved</p>
+            </div>
+            <button
+              onClick={() => onNavigateSection('budgets')}
+              className="text-xs font-bold text-[#5F259F] hover:underline"
+            >
+              Vault →
+            </button>
+          </div>
+
+          <div className="space-y-2.5">
+            {commitments.slice(0, 3).map((com) => (
+              <div
+                key={com.id}
+                className="p-3 rounded-xl border border-[#E2E8F0] bg-[#F8F9FC] space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#172033]">{com.title}</h4>
+                  <span className="text-xs font-extrabold text-[#172033]">₹{com.allocatedAmount.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-[#718096]">
+                  <span>{com.dueDateDescription}</span>
+                  <button
+                    onClick={() => onOpenMakePayment({
+                      name: com.title,
+                      upiId: `${com.title.toLowerCase().replace(/\s+/g, '')}@okaxis`,
+                      amount: com.allocatedAmount,
+                      category: com.category
+                    })}
+                    className="text-[10px] font-bold text-[#5F259F] hover:underline"
+                  >
+                    Pay via UPI
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Tax Assistant Card (Requirement #8 preview) */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-[#35145F] to-[#5F259F] text-white space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold flex items-center gap-1.5">
+                <Scale className="w-4 h-4 text-amber-300" />
+                <span>TaxSaathi AI CA</span>
+              </span>
+              <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">FY 2024-25</span>
+            </div>
+            <p className="text-[11px] text-purple-200 leading-relaxed">
+              Section 115BAC automated tax savings engine is monitoring your transactions.
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => setIsTaxCalcOpen(true)}
+                className="py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] text-center transition-all"
+              >
+                Calculate Tax
+              </button>
+              <button
+                onClick={() => setIsGstOpen(true)}
+                className="py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] text-center transition-all"
+              >
+                GST Calculator
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <ReceiveMoneyModal
+        isOpen={isReceiveOpen}
+        onClose={() => setIsReceiveOpen(false)}
+      />
+
+      <RequestMoneyModal
+        isOpen={isRequestOpen}
+        onClose={() => setIsRequestOpen(false)}
+      />
+
+      {billModalCategory && (
+        <BillPaymentModal
+          isOpen={!!billModalCategory}
+          onClose={() => setBillModalCategory(null)}
+          initialCategory={billModalCategory}
+        />
+      )}
+
+      <GstCalculatorModal
+        isOpen={isGstOpen}
+        onClose={() => setIsGstOpen(false)}
+      />
+
+      <IncomeTaxModal
+        isOpen={isTaxCalcOpen}
+        onClose={() => setIsTaxCalcOpen(false)}
+        onOpenFullTaxHub={() => onNavigateSection('tax')}
+      />
     </div>
   );
 };
