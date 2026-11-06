@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,43 +8,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        fintech: {
-          primary: '#5F259F', // Deep Royal Purple
-          secondary: '#35145F', // Dark Violet
-          dark: '#172033', // Dark Navy primary text
-          slate: '#718096', // Slate Grey secondary text
-          light: '#7A38BE',
-          soft: '#F3EEF9',
-          bg: '#F8F9FC', // Soft Neutral
+        phonepe: {
+          primary: '#5F259F',
+          dark: '#35145F',
+          secondary: '#8B4DCC',
+          bg: '#F6F3FA',
+          darkSurface: '#21152D',
+          darkBg: '#180E24',
           card: '#FFFFFF',
-          success: '#16A36A', // Green
-          warning: '#E9A23B', // Amber
+          darkCard: '#2A1C39',
+          success: '#16A36A',
+          warning: '#F4A62A',
+          border: '#E8E1F2',
+          darkBorder: '#3D2854',
+          textMuted: '#7A6B8A',
+          darkTextMuted: '#AFA4BF'
+        },
+        fintech: {
+          primary: '#5F259F',
+          secondary: '#35145F',
+          dark: '#172033',
+          slate: '#718096',
+          light: '#8B4DCC',
+          soft: '#F6F3FA',
+          bg: '#F6F3FA',
+          card: '#FFFFFF',
+          success: '#16A36A',
+          warning: '#E9A23B',
           danger: '#DC2626',
           border: '#E2E8F0'
-        },
-        pay: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          500: '#4f46e5',
-          600: '#4338ca',
-          700: '#3730a3',
-          800: '#312e81',
-          900: '#1e1b4b'
-        },
-        gpay: {
-          blue: '#1a73e8',
-          green: '#0f9d58',
-          yellow: '#f4b400',
-          red: '#ea4335'
-        },
-        saathi: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b'
         }
       },
       fontFamily: {
@@ -53,4 +46,3 @@ export default {
   },
   plugins: [],
 }
-

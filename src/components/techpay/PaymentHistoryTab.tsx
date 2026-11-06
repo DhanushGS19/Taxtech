@@ -144,15 +144,15 @@ export const PaymentHistoryTab: React.FC<PaymentHistoryTabProps> = ({
   return (
     <div className="space-y-5 animate-fadeIn">
       {/* 1. TOP HEADER & STATEMENT EXPORT */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-extrabold text-[#172033]">Transaction History & Statements</h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-[#F3EEF9] text-[#5F259F] text-xs font-bold">
+            <h1 className="text-lg font-extrabold text-[#172033] dark:text-white">Transaction History & Statements</h1>
+            <span className="px-2.5 py-0.5 rounded-full bg-[#F3EEF9] dark:bg-[#35145F] text-[#5F259F] dark:text-purple-300 text-xs font-bold">
               {filtered.length} of {transactions.length} Transactions
             </span>
           </div>
-          <p className="text-xs text-[#718096] mt-0.5">
+          <p className="text-xs text-[#718096] dark:text-slate-300 mt-0.5">
             Verified UPI payments with Google Places merchant geolocation intelligence
           </p>
         </div>
@@ -162,7 +162,7 @@ export const PaymentHistoryTab: React.FC<PaymentHistoryTabProps> = ({
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
-            className="px-3 py-2 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0] text-xs font-bold text-[#172033] focus:outline-none focus:border-[#5F259F]"
+            className="px-3 py-2 rounded-xl bg-[#F8F9FC] dark:bg-[#2A1C39] border border-[#E8E1F2] dark:border-[#3D2854] text-xs font-bold text-[#172033] dark:text-white focus:outline-none focus:border-[#5F259F]"
           >
             <option value="ALL">All Dates</option>
             <option value="THIS_MONTH">This Month (Nov 2024)</option>
@@ -173,7 +173,7 @@ export const PaymentHistoryTab: React.FC<PaymentHistoryTabProps> = ({
           {/* Export Statement Button */}
           <button
             onClick={handleExportStatement}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#F8F9FC] border border-[#E2E8F0] text-[#172033] font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
+            className="px-3.5 py-2 rounded-xl bg-white dark:bg-[#2A1C39] hover:bg-[#F8F9FC] dark:hover:bg-[#35145F] border border-[#E8E1F2] dark:border-[#3D2854] text-[#172033] dark:text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
           >
             <Download className="w-3.5 h-3.5 text-[#5F259F]" />
             <span>Export Statement</span>
@@ -184,50 +184,50 @@ export const PaymentHistoryTab: React.FC<PaymentHistoryTabProps> = ({
       {/* 2. TWO FINANCIAL SUMMARY INDICATORS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Total Money Sent */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096]">Total Money Sent</span>
-            <div className="text-2xl font-black text-[#172033] mt-1">₹{totalSent.toLocaleString('en-IN')}</div>
-            <p className="text-[11px] text-[#718096] mt-0.5">Debited from linked accounts</p>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096] dark:text-purple-200">Total Money Sent</span>
+            <div className="text-2xl font-black text-[#172033] dark:text-white mt-1">₹{totalSent.toLocaleString('en-IN')}</div>
+            <p className="text-[11px] text-[#718096] dark:text-slate-400 mt-0.5">Debited from linked accounts</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[#172033]">
-            <ArrowUpRight className="w-5 h-5 text-slate-700" />
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[#172033] dark:text-white">
+            <ArrowUpRight className="w-5 h-5 text-slate-700 dark:text-slate-200" />
           </div>
         </div>
 
         {/* Total Money Received */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#16A36A]">Total Money Received</span>
             <div className="text-2xl font-black text-[#16A36A] mt-1">+₹{totalReceived.toLocaleString('en-IN')}</div>
-            <p className="text-[11px] text-[#718096] mt-0.5">Credited via salary, refunds & UPI</p>
+            <p className="text-[11px] text-[#718096] dark:text-slate-400 mt-0.5">Credited via salary, refunds & UPI</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#16A36A]">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800 flex items-center justify-center text-[#16A36A]">
             <ArrowDownLeft className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* 3. SEARCH BAR, CITY & 6 TRANSACTION FILTERS */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs space-y-3">
         <div className="flex flex-col sm:flex-row gap-2">
           {/* Search field */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#718096] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#718096] dark:text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by merchant name, description, amount, or city..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0] text-xs text-[#172033] placeholder:text-[#718096] focus:outline-none focus:border-[#5F259F]"
+              placeholder="Search by merchant, place, UPI ID, or keyword..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F8F9FC] dark:bg-[#2A1C39] border border-[#E8E1F2] dark:border-[#3D2854] text-xs font-medium text-[#172033] dark:text-white focus:outline-none focus:border-[#5F259F]"
             />
           </div>
 
-          {/* City selector */}
+          {/* City filter */}
           <select
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-[#F8F9FC] border border-[#E2E8F0] text-xs font-semibold text-[#172033] focus:outline-none focus:border-[#5F259F]"
+            className="px-3 py-2 rounded-xl bg-[#F8F9FC] dark:bg-[#2A1C39] border border-[#E8E1F2] dark:border-[#3D2854] text-xs font-bold text-[#172033] dark:text-white focus:outline-none"
           >
             <option value="ALL">All Cities ({cities.length})</option>
             {cities.map(c => (
@@ -236,23 +236,23 @@ export const PaymentHistoryTab: React.FC<PaymentHistoryTabProps> = ({
           </select>
         </div>
 
-        {/* The 6 Transaction Filters */}
+        {/* 6 Quick Filters */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
           {[
-            { id: 'ALL', label: 'All' },
-            { id: 'SENT', label: 'Sent' },
-            { id: 'RECEIVED', label: 'Received' },
+            { id: 'ALL', label: 'All Transactions' },
+            { id: 'SENT', label: 'Money Sent' },
+            { id: 'RECEIVED', label: 'Money Received' },
             { id: 'RECHARGE', label: 'Recharge' },
             { id: 'BILLS', label: 'Bills' },
             { id: 'BANK', label: 'Bank Transfers' }
-          ].map((f) => (
+          ].map(f => (
             <button
               key={f.id}
               onClick={() => setSelectedFilter(f.id as HistoryFilterType)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 selectedFilter === f.id
-                  ? 'bg-[#5F259F] text-white font-bold shadow-xs'
-                  : 'bg-[#F8F9FC] text-[#718096] hover:text-[#172033] hover:bg-slate-100 border border-[#E2E8F0]'
+                  ? 'bg-[#5F259F] text-white shadow-xs'
+                  : 'bg-[#F8F9FC] dark:bg-[#2A1C39] text-[#718096] dark:text-slate-300 hover:text-[#172033] dark:hover:text-white'
               }`}
             >
               {f.label}
@@ -264,8 +264,8 @@ export const PaymentHistoryTab: React.FC<PaymentHistoryTabProps> = ({
       {/* 4. PROFESSIONAL MAP & TRANSACTION LIST LAYOUT */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Column: Transaction List (5 Cols on Desktop) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden flex flex-col max-h-[640px]">
-          <div className="p-3.5 border-b border-slate-100 bg-[#F8F9FC] flex items-center justify-between text-xs font-bold text-[#172033]">
+        <div className="lg:col-span-5 bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs overflow-hidden flex flex-col max-h-[640px]">
+          <div className="p-3.5 border-b border-[#E8E1F2] dark:border-[#3D2854] bg-[#F8F9FC] dark:bg-[#2A1C39] flex items-center justify-between text-xs font-bold text-[#172033] dark:text-white">
             <span>Transaction List ({filtered.length})</span>
             <span className="text-[11px] text-[#718096]">Click to view details</span>
           </div>

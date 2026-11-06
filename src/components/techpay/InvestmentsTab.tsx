@@ -138,7 +138,7 @@ export const InvestmentsTab: React.FC = () => {
         </div>
 
         {/* Wealth Category Filter Tabs */}
-        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-[#E2E8F0] shadow-xs overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 bg-white dark:bg-[#21152D] p-1 rounded-xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs overflow-x-auto no-scrollbar">
           {[
             { id: 'all', label: 'All Services' },
             { id: 'gold', label: '24K Gold' },
@@ -152,7 +152,7 @@ export const InvestmentsTab: React.FC = () => {
               className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                 activeWealthTab === tab.id
                   ? 'bg-[#5F259F] text-white shadow-xs'
-                  : 'text-[#718096] hover:text-[#172033] hover:bg-[#F8F9FC]'
+                  : 'text-[#718096] dark:text-slate-300 hover:text-[#172033] dark:hover:text-white hover:bg-[#F8F9FC] dark:hover:bg-[#2A1C39]'
               }`}
             >
               {tab.label}
@@ -163,29 +163,29 @@ export const InvestmentsTab: React.FC = () => {
 
       {/* QUICK WEALTH METRICS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <span className="text-[11px] font-bold text-[#718096] uppercase tracking-wider block">Gold Vault</span>
-          <div className="text-lg sm:text-xl font-black text-[#172033] mt-1">
-            {goldBalanceGrams.toFixed(3)} <span className="text-xs text-[#718096] font-normal">grams</span>
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <span className="text-[11px] font-bold text-[#718096] dark:text-purple-200 uppercase tracking-wider block">Gold Vault</span>
+          <div className="text-lg sm:text-xl font-black text-[#172033] dark:text-white mt-1">
+            {goldBalanceGrams.toFixed(3)} <span className="text-xs text-[#718096] dark:text-slate-400 font-normal">grams</span>
           </div>
           <div className="text-xs font-bold text-[#E9A23B] mt-0.5">
             ≈ ₹{Math.round(goldBalanceGrams * goldRatePerGram).toLocaleString('en-IN')}
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <span className="text-[11px] font-bold text-[#718096] uppercase tracking-wider block">Active SIPs</span>
-          <div className="text-lg sm:text-xl font-black text-[#5F259F] mt-1">
-            ₹15,000<span className="text-xs text-[#718096] font-normal"> /mo</span>
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <span className="text-[11px] font-bold text-[#718096] dark:text-purple-200 uppercase tracking-wider block">Active SIPs</span>
+          <div className="text-lg sm:text-xl font-black text-[#5F259F] dark:text-purple-300 mt-1">
+            ₹15,000<span className="text-xs text-[#718096] dark:text-slate-400 font-normal"> /mo</span>
           </div>
           <div className="text-xs font-semibold text-[#16A36A] mt-0.5">
             3 Running on AutoPay
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <span className="text-[11px] font-bold text-[#718096] uppercase tracking-wider block">Mutual Fund Value</span>
-          <div className="text-lg sm:text-xl font-black text-[#172033] mt-1">
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <span className="text-[11px] font-bold text-[#718096] dark:text-purple-200 uppercase tracking-wider block">Mutual Fund Value</span>
+          <div className="text-lg sm:text-xl font-black text-[#172033] dark:text-white mt-1">
             ₹1,47,500
           </div>
           <div className="text-xs font-semibold text-[#16A36A] mt-0.5 flex items-center gap-1">
@@ -194,12 +194,12 @@ export const InvestmentsTab: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <span className="text-[11px] font-bold text-[#718096] uppercase tracking-wider block">Tax Saved (80C)</span>
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <span className="text-[11px] font-bold text-[#718096] dark:text-purple-200 uppercase tracking-wider block">Tax Saved (80C)</span>
           <div className="text-lg sm:text-xl font-black text-[#16A36A] mt-1">
             ₹46,800
           </div>
-          <div className="text-xs font-semibold text-[#718096] mt-0.5">
+          <div className="text-xs font-semibold text-[#718096] dark:text-slate-400 mt-0.5">
             Section 80C ELSS Cap
           </div>
         </div>
@@ -207,16 +207,16 @@ export const InvestmentsTab: React.FC = () => {
 
       {/* SECTION 1: 24K DIGITAL GOLD HERO */}
       {(activeWealthTab === 'all' || activeWealthTab === 'gold') && (
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
-          <div className="p-5 sm:p-6 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-b border-[#E2E8F0]">
+        <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs overflow-hidden">
+          <div className="p-5 sm:p-6 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-b border-[#E8E1F2] dark:border-[#3D2854]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
               <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E9A23B]/10 text-amber-800 text-xs font-bold border border-[#E9A23B]/30">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E9A23B]/10 text-amber-800 dark:text-amber-300 text-xs font-bold border border-[#E9A23B]/30">
                   <Coins className="w-3.5 h-3.5 text-[#E9A23B]" />
                   <span>Augmont 999.9 Pure 24K Gold • 100% Insured BRINKS Vaults</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                  <h3 className="text-2xl sm:text-3xl font-black text-[#172033]">
+                  <h3 className="text-2xl sm:text-3xl font-black text-[#172033] dark:text-white">
                     ₹{goldRatePerGram.toLocaleString('en-IN')}
                     <span className="text-sm font-semibold text-[#718096]"> / gram</span>
                   </h3>

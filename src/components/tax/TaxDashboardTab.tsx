@@ -78,16 +78,16 @@ export const TaxDashboardTab: React.FC<TaxDashboardTabProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-12 animate-fadeIn text-[#172033]">
+    <div className="space-y-6 pb-12 animate-fadeIn text-[#172033] dark:text-white">
       {/* Top Banner */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-xs p-6 relative overflow-hidden">
+      <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs p-6 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2 max-w-xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#5F259F]/10 text-[#5F259F] text-xs font-bold border border-[#5F259F]/20">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#5F259F]/10 dark:bg-[#5F259F]/30 text-[#5F259F] dark:text-purple-300 text-xs font-bold border border-[#5F259F]/20 dark:border-[#5F259F]/40">
               <Scale className="w-3.5 h-3.5" />
               <span>TaxSaathi AI CA • Budget 2024 Section 115BAC Engine</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#172033]">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#172033] dark:text-white">
               {currentRegimeData.isRefund ? (
                 <span className="text-[#16A36A]">
                   Estimated Refund: {formatPrivateAmount(Math.abs(currentRegimeData.netTaxPayableOrRefund))}
@@ -98,7 +98,7 @@ export const TaxDashboardTab: React.FC<TaxDashboardTabProps> = ({
                 <span>Estimated Net Tax Due: {formatPrivateAmount(currentRegimeData.netTaxPayableOrRefund)}</span>
               )}
             </h1>
-            <p className="text-xs text-[#718096] leading-relaxed">
+            <p className="text-xs text-[#718096] dark:text-slate-300 leading-relaxed">
               {taxComparison.explanation}
             </p>
           </div>
@@ -106,14 +106,14 @@ export const TaxDashboardTab: React.FC<TaxDashboardTabProps> = ({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
             <button
               onClick={() => setIsTaxCalcModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-[#F8F9FC] hover:bg-[#5F259F]/10 text-[#172033] font-bold text-xs border border-[#E2E8F0] flex items-center justify-center gap-1.5 transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-[#F8F9FC] dark:bg-[#2A1C39] hover:bg-[#5F259F]/10 text-[#172033] dark:text-white font-bold text-xs border border-[#E8E1F2] dark:border-[#3D2854] flex items-center justify-center gap-1.5 transition-colors"
             >
-              <Calculator className="w-4 h-4 text-[#5F259F]" />
+              <Calculator className="w-4 h-4 text-[#5F259F] dark:text-purple-300" />
               <span>Tax Calculator</span>
             </button>
             <button
               onClick={() => setIsGstModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-[#F8F9FC] hover:bg-[#5F259F]/10 text-[#172033] font-bold text-xs border border-[#E2E8F0] flex items-center justify-center gap-1.5 transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-[#F8F9FC] dark:bg-[#2A1C39] hover:bg-[#5F259F]/10 text-[#172033] dark:text-white font-bold text-xs border border-[#E8E1F2] dark:border-[#3D2854] flex items-center justify-center gap-1.5 transition-colors"
             >
               <Receipt className="w-4 h-4 text-[#16A36A]" />
               <span>GST Calculator</span>
@@ -131,58 +131,58 @@ export const TaxDashboardTab: React.FC<TaxDashboardTabProps> = ({
 
       {/* 6 Statutory Dashboard Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <div className="flex items-center justify-between text-[#718096] text-[11px] font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <div className="flex items-center justify-between text-[#718096] dark:text-purple-200 text-[11px] font-bold uppercase tracking-wider">
             <span>Total Credits</span>
             <ArrowDownLeft className="w-3.5 h-3.5 text-[#16A36A]" />
           </div>
-          <div className="text-lg sm:text-xl font-black text-[#172033] mt-2">{formatPrivateAmount(totalCredits)}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">All inflows</p>
+          <div className="text-lg sm:text-xl font-black text-[#172033] dark:text-white mt-2">{formatPrivateAmount(totalCredits)}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">All inflows</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <div className="flex items-center justify-between text-[#718096] text-[11px] font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <div className="flex items-center justify-between text-[#718096] dark:text-purple-200 text-[11px] font-bold uppercase tracking-wider">
             <span>Non-Taxable</span>
             <ShieldCheck className="w-3.5 h-3.5 text-[#16A36A]" />
           </div>
           <div className="text-lg sm:text-xl font-black text-[#16A36A] mt-2">{formatPrivateAmount(nonTaxableReceipts)}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">Gifts & refunds</p>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">Gifts & refunds</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <div className="flex items-center justify-between text-[#718096] text-[11px] font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <div className="flex items-center justify-between text-[#718096] dark:text-purple-200 text-[11px] font-bold uppercase tracking-wider">
             <span>Taxable Income</span>
-            <Calculator className="w-3.5 h-3.5 text-[#5F259F]" />
+            <Calculator className="w-3.5 h-3.5 text-[#5F259F] dark:text-purple-300" />
           </div>
-          <div className="text-lg sm:text-xl font-black text-[#5F259F] mt-2">{formatPrivateAmount(currentRegimeData.netTaxableIncome)}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">After std deduction</p>
+          <div className="text-lg sm:text-xl font-black text-[#5F259F] dark:text-purple-300 mt-2">{formatPrivateAmount(currentRegimeData.netTaxableIncome)}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">After std deduction</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <div className="flex items-center justify-between text-[#718096] text-[11px] font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <div className="flex items-center justify-between text-[#718096] dark:text-purple-200 text-[11px] font-bold uppercase tracking-wider">
             <span>Deductions</span>
             <CheckCircle2 className="w-3.5 h-3.5 text-[#E9A23B]" />
           </div>
-          <div className="text-lg sm:text-xl font-black text-[#172033] mt-2">{formatPrivateAmount(eligibleDeductions)}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">80C, 80D & 24(b)</p>
+          <div className="text-lg sm:text-xl font-black text-[#172033] dark:text-white mt-2">{formatPrivateAmount(eligibleDeductions)}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">80C, 80D & 24(b)</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <div className="flex items-center justify-between text-[#718096] text-[11px] font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <div className="flex items-center justify-between text-[#718096] dark:text-purple-200 text-[11px] font-bold uppercase tracking-wider">
             <span>Taxes Paid</span>
             <Award className="w-3.5 h-3.5 text-blue-600" />
           </div>
-          <div className="text-lg sm:text-xl font-black text-[#172033] mt-2">{formatPrivateAmount(currentRegimeData.totalTaxesPaid)}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">TDS credits</p>
+          <div className="text-lg sm:text-xl font-black text-[#172033] dark:text-white mt-2">{formatPrivateAmount(currentRegimeData.totalTaxesPaid)}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">TDS credits</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-xs">
-          <div className="flex items-center justify-between text-[#718096] text-[11px] font-bold uppercase tracking-wider">
+        <div className="bg-white dark:bg-[#21152D] p-4 rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xs">
+          <div className="flex items-center justify-between text-[#718096] dark:text-purple-200 text-[11px] font-bold uppercase tracking-wider">
             <span>Tax Due</span>
-            <TrendingDown className="w-3.5 h-3.5 text-[#5F259F]" />
+            <TrendingDown className="w-3.5 h-3.5 text-[#5F259F] dark:text-purple-300" />
           </div>
-          <div className="text-lg sm:text-xl font-black text-[#5F259F] mt-2">{formatPrivateAmount(currentRegimeData.totalTaxLiability)}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">Gross tax + 4% cess</p>
+          <div className="text-lg sm:text-xl font-black text-[#5F259F] dark:text-purple-300 mt-2">{formatPrivateAmount(currentRegimeData.totalTaxLiability)}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">Gross tax + 4% cess</p>
         </div>
       </div>
 

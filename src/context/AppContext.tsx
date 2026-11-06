@@ -91,6 +91,12 @@ interface AppContextType {
   speak: (text: string) => void;
   stopSpeaking: () => void;
   resetToSampleData: () => void;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+  activeLocation: string;
+  setActiveLocation: (loc: string) => void;
+  walletBalance: number;
+  rewardsCount: number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -128,6 +134,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [goldBalanceGrams, setGoldBalanceGrams] = useState<number>(4.25);
   const [goldRatePerGram, setGoldRatePerGram] = useState<number>(7865);
+  const [walletBalance, setWalletBalance] = useState<number>(1250);
+  const [rewardsCount, setRewardsCount] = useState<number>(4);
+
+  // Theme support (light vs dark - PhonePe reference)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('tp_theme');
+    return (saved === 'dark' || saved === 'light') ? saved : 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('tp_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  // Location selector (PhonePe reference: "Work • Tathawade / Indiranagar")
+  const [activeLocation, setActiveLocation] = useState<string>(() => {
+    return localStorage.getItem('tp_location') || 'Work • Indiranagar, Bengaluru';
+  });
+
+  const handleSetActiveLocation = (loc: string) => {
+    setActiveLocation(loc);
+    localStorage.setItem('tp_location', loc);
+  };
 
   const [profiles, setProfiles] = useState<FamilyProfile[]>(() => {
     const s = localStorage.getItem('tp_profiles');
@@ -609,7 +646,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isSpeaking,
         speak,
         stopSpeaking,
-        resetToSampleData
+        resetToSampleData,
+        theme,
+        toggleTheme,
+        activeLocation,
+        setActiveLocation: handleSetActiveLocation,
+        walletBalance,
+        rewardsCount
       }}
     >
       {children}

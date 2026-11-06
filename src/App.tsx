@@ -81,7 +81,7 @@ const MainLayout: React.FC = () => {
   const unresolvedAnomalies = anomalies.filter(a => !a.resolved).length;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] text-[#172033] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F6F3FA] dark:bg-[#180E24] text-[#172033] dark:text-slate-100 flex flex-col font-sans transition-colors">
       <HeaderNav
         activeSection={mainSection}
         setActiveSection={(sec) => setMainSection(sec as MainSectionType)}
@@ -311,14 +311,14 @@ const MainLayout: React.FC = () => {
       />
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+      <footer className="bg-white dark:bg-[#21152D] border-t border-[#E8E1F2] dark:border-[#3D2854] py-6 text-center text-xs text-slate-500 dark:text-purple-200/60 transition-colors">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-slate-900">TECHPAY</span>
+            <span className="font-extrabold text-[#172033] dark:text-white">TECHPAY</span>
             <span>+ TaxSaathi</span>
             <span>• Next-Gen Payments & AI CA Platform</span>
           </div>
-          <div className="text-[11px] text-slate-400">
+          <div className="text-[11px] text-slate-400 dark:text-slate-400">
             Smart UPI • Real-World Geo History • Fixed Budget Lock Vault • Verified Indian Tax Engine
           </div>
         </div>
@@ -327,7 +327,7 @@ const MainLayout: React.FC = () => {
       {/* SECTION 5: FIXED BOTTOM NAVIGATION (MOBILE ONLY: block md:hidden) */}
       <nav
         aria-label="Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E8F0] shadow-[0_-4px_24px_rgba(95,37,159,0.08)] py-1.5 px-3 sm:px-6 block md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#21152D]/95 backdrop-blur-md border-t border-[#E8E1F2] dark:border-[#3D2854] shadow-[0_-4px_24px_rgba(95,37,159,0.08)] py-1.5 px-3 sm:px-6 block md:hidden transition-colors"
       >
         <div className="max-w-md sm:max-w-lg mx-auto flex items-center justify-between">
           {/* 1. Home */}
@@ -336,15 +336,15 @@ const MainLayout: React.FC = () => {
             onClick={() => setMainSection('home')}
             className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
               mainSection === 'home'
-                ? 'text-[#5F259F] font-black'
-                : 'text-slate-500 hover:text-slate-900 font-medium'
+                ? 'text-[#5F259F] dark:text-purple-300 font-black'
+                : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
             }`}
           >
             <div
               className={`p-1.5 rounded-xl transition-all ${
                 mainSection === 'home'
-                  ? 'bg-[#F0EAF8] text-[#5F259F] shadow-xs'
-                  : 'text-slate-500'
+                  ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
+                  : 'text-slate-500 dark:text-purple-200/70'
               }`}
             >
               <Home className="w-5 h-5" />
@@ -358,15 +358,15 @@ const MainLayout: React.FC = () => {
             onClick={() => setMainSection('history')}
             className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
               mainSection === 'history' || mainSection === 'payments'
-                ? 'text-[#5F259F] font-black'
-                : 'text-slate-500 hover:text-slate-900 font-medium'
+                ? 'text-[#5F259F] dark:text-purple-300 font-black'
+                : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
             }`}
           >
             <div
               className={`p-1.5 rounded-xl transition-all ${
                 mainSection === 'history' || mainSection === 'payments'
-                  ? 'bg-[#F0EAF8] text-[#5F259F] shadow-xs'
-                  : 'text-slate-500'
+                  ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
+                  : 'text-slate-500 dark:text-purple-200/70'
               }`}
             >
               <Receipt className="w-5 h-5" />
@@ -381,14 +381,14 @@ const MainLayout: React.FC = () => {
             className="flex flex-col items-center justify-center -mt-6 group focus:outline-none"
           >
             <div
-              className={`w-14 h-14 rounded-full bg-gradient-to-tr from-[#38146B] to-[#5F259F] text-white flex items-center justify-center shadow-lg shadow-[#5F259F]/40 border-4 border-white group-hover:scale-105 active:scale-95 transition-all ${
+              className={`w-14 h-14 rounded-full bg-gradient-to-tr from-[#38146B] to-[#5F259F] text-white flex items-center justify-center shadow-lg shadow-[#5F259F]/40 border-4 border-white dark:border-[#21152D] group-hover:scale-105 active:scale-95 transition-all ${
                 mainSection === 'scan' ? 'ring-2 ring-[#5F259F]' : ''
               }`}
             >
               <QrCode className="w-7 h-7" />
             </div>
             <span className={`text-[11px] font-black mt-1 ${
-              mainSection === 'scan' ? 'text-[#5F259F]' : 'text-slate-600'
+              mainSection === 'scan' ? 'text-[#5F259F] dark:text-purple-300' : 'text-slate-600 dark:text-purple-200/80'
             }`}>
               Scan
             </span>
@@ -400,15 +400,15 @@ const MainLayout: React.FC = () => {
             onClick={() => setMainSection('wealth')}
             className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
               mainSection === 'wealth'
-                ? 'text-[#5F259F] font-black'
-                : 'text-slate-500 hover:text-slate-900 font-medium'
+                ? 'text-[#5F259F] dark:text-purple-300 font-black'
+                : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
             }`}
           >
             <div
               className={`p-1.5 rounded-xl transition-all ${
                 mainSection === 'wealth'
-                  ? 'bg-[#F0EAF8] text-[#5F259F] shadow-xs'
-                  : 'text-slate-500'
+                  ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
+                  : 'text-slate-500 dark:text-purple-200/70'
               }`}
             >
               <Coins className="w-5 h-5" />
@@ -422,15 +422,15 @@ const MainLayout: React.FC = () => {
             onClick={() => setMainSection('profile')}
             className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
               mainSection === 'profile'
-                ? 'text-[#5F259F] font-black'
-                : 'text-slate-500 hover:text-slate-900 font-medium'
+                ? 'text-[#5F259F] dark:text-purple-300 font-black'
+                : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
             }`}
           >
             <div
               className={`p-1.5 rounded-xl transition-all ${
                 mainSection === 'profile'
-                  ? 'bg-[#F0EAF8] text-[#5F259F] shadow-xs'
-                  : 'text-slate-500'
+                  ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
+                  : 'text-slate-500 dark:text-purple-200/70'
               }`}
             >
               <User className="w-5 h-5" />

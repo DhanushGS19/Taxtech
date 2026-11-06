@@ -96,13 +96,13 @@ export const BudgetVaultTab: React.FC<BudgetVaultTabProps> = ({ onOpenMakePaymen
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-extrabold text-[#172033] flex items-center gap-2">
+          <h1 className="text-lg font-extrabold text-[#172033] dark:text-white flex items-center gap-2">
             <Lock className="w-5 h-5 text-[#5F259F]" />
             <span>Smart Budget Vault & Financial Planning</span>
           </h1>
-          <p className="text-xs text-[#718096] mt-0.5">
+          <p className="text-xs text-[#718096] dark:text-slate-300 mt-0.5">
             Ring-fencing non-negotiable monthly expenses so your rent, EMIs, and school fees are 100% protected.
           </p>
         </div>
@@ -113,8 +113,8 @@ export const BudgetVaultTab: React.FC<BudgetVaultTabProps> = ({ onOpenMakePaymen
             onClick={togglePrivacyMode}
             className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all ${
               isPrivacyMode
-                ? 'bg-amber-50 text-[#E9A23B] border-amber-200'
-                : 'bg-[#F8F9FC] text-[#718096] border-[#E2E8F0]'
+                ? 'bg-amber-50 dark:bg-amber-950/40 text-[#E9A23B] border-amber-200 dark:border-amber-800'
+                : 'bg-[#F8F9FC] dark:bg-[#2A1C39] text-[#718096] dark:text-slate-300 border-[#E8E1F2] dark:border-[#3D2854]'
             }`}
           >
             {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5 text-[#E9A23B]" /> : <Eye className="w-3.5 h-3.5 text-[#718096]" />}
@@ -133,11 +133,11 @@ export const BudgetVaultTab: React.FC<BudgetVaultTabProps> = ({ onOpenMakePaymen
 
       {/* Overspending Active Guardrail */}
       {overspendingAlert && (
-        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 flex items-start gap-3">
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 p-4 rounded-xl text-amber-900 dark:text-amber-200 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-[#E9A23B] shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <h3 className="text-xs font-bold text-amber-950">Active Budget Guardrail Warning</h3>
-            <p className="text-xs text-amber-900 leading-relaxed">{overspendingAlert}</p>
+            <h3 className="text-xs font-bold text-amber-950 dark:text-amber-100">Active Budget Guardrail Warning</h3>
+            <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">{overspendingAlert}</p>
           </div>
         </div>
       )}
@@ -145,43 +145,43 @@ export const BudgetVaultTab: React.FC<BudgetVaultTabProps> = ({ onOpenMakePaymen
       {/* 5 Top Financial Metrics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {/* 1. Monthly Income */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096]">Monthly Income</span>
-          <div className="text-lg font-black text-[#172033] mt-1">{formatPrivateAmount(monthlyIncome, unmaskedItems['income'])}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">Total cash flow</p>
+        <div className="bg-white dark:bg-[#21152D] rounded-xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096] dark:text-purple-200">Monthly Income</span>
+          <div className="text-lg font-black text-[#172033] dark:text-white mt-1">{formatPrivateAmount(monthlyIncome, unmaskedItems['income'])}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">Total cash flow</p>
         </div>
 
         {/* 2. Available Spending Balance */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
+        <div className="bg-white dark:bg-[#21152D] rounded-xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#16A36A]">Available Spending</span>
           <div className="text-lg font-black text-[#16A36A] mt-1">{formatPrivateAmount(freeRemaining, unmaskedItems['safe'])}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">Safe discretionary</p>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">Safe discretionary</p>
         </div>
 
         {/* 3. Reserved Money */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#5F259F]">Reserved Money</span>
-          <div className="text-lg font-black text-[#5F259F] mt-1">{formatPrivateAmount(totalLockedAmount, unmaskedItems['vault'])}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">Ring-fenced in vault</p>
+        <div className="bg-white dark:bg-[#21152D] rounded-xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#5F259F] dark:text-purple-300">Reserved Money</span>
+          <div className="text-lg font-black text-[#5F259F] dark:text-purple-300 mt-1">{formatPrivateAmount(totalLockedAmount, unmaskedItems['vault'])}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">Ring-fenced in vault</p>
         </div>
 
         {/* 4. Monthly Expenses */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096]">Monthly Expenses</span>
-          <div className="text-lg font-black text-[#172033] mt-1">{formatPrivateAmount(currentDiscretionarySpent, unmaskedItems['spent'])}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">Discretionary spent</p>
+        <div className="bg-white dark:bg-[#21152D] rounded-xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#718096] dark:text-purple-200">Monthly Expenses</span>
+          <div className="text-lg font-black text-[#172033] dark:text-white mt-1">{formatPrivateAmount(currentDiscretionarySpent, unmaskedItems['spent'])}</div>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">Discretionary spent</p>
         </div>
 
         {/* 5. Upcoming Commitments */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
+        <div className="bg-white dark:bg-[#21152D] rounded-xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#E9A23B]">Upcoming Pending</span>
           <div className="text-lg font-black text-[#E9A23B] mt-1">{formatPrivateAmount(unpaidLockedAmount, unmaskedItems['pending'])}</div>
-          <p className="text-[10px] text-[#718096] mt-0.5">Due this month</p>
+          <p className="text-[10px] text-[#718096] dark:text-slate-400 mt-0.5">Due this month</p>
         </div>
       </div>
 
       {/* Allocation Progress Bar Meter */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] p-5 shadow-xs space-y-3">
         <div className="flex justify-between items-center text-xs">
           <span className="font-bold text-[#172033]">Monthly Cash Flow Allocation Breakdown</span>
           <span className="text-[#718096]">{percentSpent}% of discretionary spending limit consumed</span>

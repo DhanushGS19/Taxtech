@@ -13,13 +13,16 @@ import {
   HelpCircle,
   Eye,
   EyeOff,
-  Mic,
-  FileText,
   User,
   ChevronDown,
   ShieldCheck,
   CheckCircle2,
-  Settings
+  Settings,
+  QrCode,
+  MapPin,
+  Sun,
+  Moon,
+  Sparkles
 } from 'lucide-react';
 import { NotificationsModal } from './techpay/NotificationsModal';
 import { HelpSupportModal } from './techpay/HelpSupportModal';
@@ -46,52 +49,107 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     setActiveProfileId,
     isPrivacyMode,
     togglePrivacyMode,
-    activeRegime,
-    toggleRegime
+    theme,
+    toggleTheme,
+    activeLocation,
+    setActiveLocation
   } = useApp();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isLocationMenuOpen, setIsLocationMenuOpen] = useState(false);
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
-    { id: 'scan', label: 'Payments', icon: CreditCard },
+    { id: 'scan', label: 'Scan & Pay', icon: QrCode },
     { id: 'history', label: 'History', icon: Receipt },
     { id: 'wealth', label: 'Wealth', icon: Coins },
-    { id: 'tax', label: 'Tax', icon: Scale },
+    { id: 'tax', label: 'TaxSaathi', icon: Scale },
     { id: 'budgets', label: 'Budgets', icon: Lock }
   ];
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white border-b border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.03)] h-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
-          {/* Left: TechPay Logo, Name & Tagline */}
-          <div
-            className="flex items-center gap-3 cursor-pointer shrink-0"
-            onClick={() => setActiveSection?.('home')}
-          >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#35145F] to-[#5F259F] flex items-center justify-center text-white shadow-sm shadow-[#5F259F]/20">
-              <Zap className="w-5 h-5 fill-white" />
+      <header className="sticky top-0 z-40 bg-white dark:bg-[#21152D] border-b border-[#E8E1F2] dark:border-[#3D2854] shadow-[0_1px_3px_rgba(0,0,0,0.03)] h-16 transition-colors">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3 sm:gap-4">
+          {/* ============================================================ */}
+          {/* LEFT: User Profile Image, Greeting & Location Selection      */}
+          {/* ============================================================ */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            {/* User Profile Avatar with Online indicator */}
+            <div
+              onClick={() => setActiveSection?.('profile')}
+              className="relative cursor-pointer group"
+              title="View Profile"
+            >
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#35145F] to-[#5F259F] text-white flex items-center justify-center font-black text-sm shadow-xs border-2 border-white dark:border-[#35145F] group-hover:scale-105 transition-transform">
+                {activeProfile.name.charAt(0)}
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#16A36A] border-2 border-white dark:border-[#21152D]"></span>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base font-extrabold tracking-tight text-[#172033]">
+
+            {/* Greeting & Location Selector */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 leading-none">
+                <span
+                  onClick={() => setActiveSection?.('home')}
+                  className="text-xs sm:text-sm font-extrabold text-[#172033] dark:text-white cursor-pointer hover:text-[#5F259F] transition-colors"
+                >
                   TechPay
                 </span>
-                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-[#F3EEF9] text-[#5F259F]">
-                  Fintech
+                <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-purple-100 dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300">
+                  UPI
                 </span>
               </div>
-              <p className="text-[11px] text-[#718096] font-medium leading-none hidden sm:block">
-                Digital Payments & Tax Intelligence
-              </p>
+
+              {/* Location Selector Pill */}
+              <div className="relative mt-0.5">
+                <button
+                  type="button"
+                  onClick={() => setIsLocationMenuOpen(prev => !prev)}
+                  className="flex items-center gap-1 text-[11px] text-[#718096] dark:text-purple-200/80 hover:text-[#172033] dark:hover:text-white font-semibold transition-colors"
+                >
+                  <MapPin className="w-3 h-3 text-[#5F259F] dark:text-purple-400 shrink-0" />
+                  <span className="truncate max-w-[130px] sm:max-w-[180px]">{activeLocation}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+
+                {/* Location dropdown */}
+                {isLocationMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-64 bg-white dark:bg-[#2A1C39] rounded-xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xl py-2 z-50 text-xs">
+                    <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase">Select Location</div>
+                    {[
+                      'Work • Indiranagar, Bengaluru',
+                      'Home • Koramangala, Bengaluru',
+                      'Parents’ Home • Shivaji Nagar, Pune',
+                      'Office • Cyber City, Gurugram'
+                    ].map((loc, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setActiveLocation(loc);
+                          setIsLocationMenuOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-[#F6F3FA] dark:hover:bg-[#35145F] ${
+                          activeLocation === loc ? 'text-[#5F259F] dark:text-purple-300 font-bold' : 'text-[#172033] dark:text-slate-200'
+                        }`}
+                      >
+                        <span className="truncate">{loc}</span>
+                        {activeLocation === loc && <CheckCircle2 className="w-3.5 h-3.5 text-[#5F259F]" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Centre: Clean Desktop Navigation (Hidden on Mobile) */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          {/* ============================================================ */}
+          {/* CENTRE: Desktop Navigation Links (Hidden on Mobile)          */}
+          {/* ============================================================ */}
+          <nav className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive =
@@ -104,141 +162,135 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => setActiveSection?.(item.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-[#F3EEF9] text-[#5F259F] font-bold shadow-xs'
-                      : 'text-[#718096] hover:text-[#172033] hover:bg-[#F8F9FC]'
+                      ? 'bg-purple-50 dark:bg-purple-950/70 text-[#5F259F] dark:text-purple-300 font-bold border border-purple-200/60 dark:border-purple-800'
+                      : 'text-[#718096] dark:text-slate-300 hover:text-[#172033] dark:hover:text-white hover:bg-[#F6F3FA] dark:hover:bg-[#2A1C39]'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5" />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
-          {/* Right: Notifications, Help, User Profile & Settings */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Voice CA Assistant Button */}
+          {/* ============================================================ */}
+          {/* RIGHT: QR Shortcut, Notifications, Help & Theme Toggle      */}
+          {/* ============================================================ */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Ask AI CA Shortcut */}
             <button
               type="button"
               onClick={onOpenVoiceCa}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] text-[#5F259F] border border-[#E2E8F0] text-xs font-bold transition-all shadow-xs"
-              title="Ask AI CA Vikram"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-[#5F259F] dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors"
             >
-              <Mic className="w-3.5 h-3.5 text-[#5F259F] animate-pulse" />
+              <Sparkles className="w-3.5 h-3.5 text-[#5F259F] dark:text-purple-300" />
               <span>Voice CA</span>
             </button>
 
-            {/* Privacy Shield Toggle */}
+            {/* QR Scanner Shortcut Button */}
             <button
               type="button"
-              onClick={togglePrivacyMode}
-              title={
-                isPrivacyMode
-                  ? 'Privacy Active: Balances and loans are masked'
-                  : 'Privacy Inactive: Balances are visible'
-              }
-              className={`p-2 rounded-xl border text-xs transition-all ${
-                isPrivacyMode
-                  ? 'bg-amber-50 text-[#E9A23B] border-amber-200'
-                  : 'bg-[#F8F9FC] hover:bg-slate-100 text-[#718096] border-[#E2E8F0]'
-              }`}
+              onClick={() => setActiveSection?.('scan')}
+              title="Scan Any QR"
+              className="p-2 rounded-xl bg-[#F6F3FA] dark:bg-[#2A1C39] hover:bg-purple-100 dark:hover:bg-purple-900 text-[#5F259F] dark:text-purple-300 border border-[#E8E1F2] dark:border-[#3D2854] transition-colors"
             >
-              {isPrivacyMode ? <EyeOff className="w-4 h-4 text-[#E9A23B]" /> : <Eye className="w-4 h-4 text-[#718096]" />}
+              <QrCode className="w-4 h-4" />
             </button>
 
-            {/* Notifications Bell */}
+            {/* Notification Bell */}
             <button
               type="button"
               onClick={() => setIsNotifOpen(true)}
-              className="relative p-2 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] text-[#718096] hover:text-[#5F259F] border border-[#E2E8F0] transition-all"
               title="Notifications"
+              className="relative p-2 rounded-xl bg-[#F6F3FA] dark:bg-[#2A1C39] hover:bg-slate-100 dark:hover:bg-[#35145F] text-[#718096] dark:text-slate-300 border border-[#E8E1F2] dark:border-[#3D2854] transition-colors"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#5F259F] ring-2 ring-white"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
             </button>
 
-            {/* Help & Support */}
+            {/* 24x7 Help & Support */}
             <button
               type="button"
               onClick={() => setIsHelpOpen(true)}
-              className="p-2 rounded-xl bg-[#F8F9FC] hover:bg-[#F3EEF9] text-[#718096] hover:text-[#5F259F] border border-[#E2E8F0] transition-all"
-              title="Help and Support"
+              title="24x7 Help & Support"
+              className="p-2 rounded-xl bg-[#F6F3FA] dark:bg-[#2A1C39] hover:bg-slate-100 dark:hover:bg-[#35145F] text-[#718096] dark:text-slate-300 border border-[#E8E1F2] dark:border-[#3D2854] transition-colors"
             >
               <HelpCircle className="w-4 h-4" />
             </button>
 
-            {/* User Profile & Account Settings */}
+            {/* Theme Switcher Toggle (Light vs Dark) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+              className="p-2 rounded-xl bg-[#F6F3FA] dark:bg-[#2A1C39] hover:bg-slate-100 dark:hover:bg-[#35145F] text-[#718096] dark:text-amber-400 border border-[#E8E1F2] dark:border-[#3D2854] transition-colors"
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4 text-purple-700" /> : <Sun className="w-4 h-4 text-amber-400" />}
+            </button>
+
+            {/* User Profile Dropdown Button */}
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-xl hover:bg-[#F8F9FC] border border-[#E2E8F0] transition-all"
+                onClick={() => setIsProfileMenuOpen(prev => !prev)}
+                className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-[#F6F3FA] dark:hover:bg-[#2A1C39] transition-colors"
               >
-                <div className={`w-7 h-7 rounded-lg ${activeProfile.avatarColor} text-white flex items-center justify-center font-bold text-xs shadow-xs`}>
+                <div className="w-8 h-8 rounded-lg bg-[#5F259F] text-white flex items-center justify-center font-bold text-xs shadow-xs">
                   {activeProfile.name.charAt(0)}
                 </div>
-                <div className="text-left hidden xl:block">
-                  <div className="text-xs font-bold text-[#172033] leading-none flex items-center gap-1">
-                    <span>{activeProfile.name}</span>
-                    <CheckCircle2 className="w-3 h-3 text-[#16A36A]" />
-                  </div>
-                  <div className="text-[10px] text-[#718096] font-mono leading-none mt-1">
-                    HDFC ••4892
-                  </div>
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-[#718096]" />
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
               </button>
 
               {/* Profile Menu Dropdown */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-[#E2E8F0] shadow-xl py-2 z-50 text-xs animate-fadeIn">
-                  <div className="px-4 py-2 border-b border-slate-100">
-                    <div className="font-bold text-[#172033]">{activeProfile.name}</div>
-                    <div className="text-[11px] text-[#718096] font-mono">{activeProfile.upiId}</div>
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[#16A36A] text-[10px] font-bold">
-                      Aadhaar & PAN KYC Verified
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#2A1C39] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] shadow-xl p-3 z-50 text-xs space-y-2 animate-fadeIn">
+                  <div className="pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <p className="font-extrabold text-[#172033] dark:text-white">{activeProfile.name}</p>
+                    <p className="text-[11px] text-[#718096] dark:text-slate-400 font-mono">{activeProfile.upiId}</p>
+                    <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950 text-[#5F259F] dark:text-purple-300">
+                      Primary UPI ID: HDFC Bank
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      setActiveSection?.('profile');
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-[#F8F9FC] text-[#172033] font-semibold flex items-center gap-2"
-                  >
-                    <User className="w-4 h-4 text-[#5F259F]" />
-                    <span>View Profile & Bank Accounts</span>
-                  </button>
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveSection?.('profile');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-[#F6F3FA] dark:hover:bg-[#35145F] text-[#172033] dark:text-slate-200 font-medium flex items-center gap-2"
+                    >
+                      <User className="w-3.5 h-3.5 text-[#5F259F]" />
+                      <span>Profile & Linked Banks</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      toggleRegime();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-[#F8F9FC] text-[#172033] font-semibold flex items-center justify-between"
-                  >
-                    <span>Tax Regime:</span>
-                    <span className="px-2 py-0.5 rounded bg-[#F3EEF9] text-[#5F259F] font-bold text-[10px]">
-                      {activeRegime} Regime
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveSection?.('family');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-[#F6F3FA] dark:hover:bg-[#35145F] text-[#172033] dark:text-slate-200 font-medium flex items-center gap-2"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#16A36A]" />
+                      <span>Family Budget Profiles</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      onOpenReport();
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-[#F8F9FC] text-[#172033] font-semibold flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4 text-[#16A36A]" />
-                    <span>Download ITR Summary</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onOpenReport();
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-[#F6F3FA] dark:hover:bg-[#35145F] text-[#172033] dark:text-slate-200 font-medium flex items-center gap-2"
+                    >
+                      <Receipt className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Download Tax & UPI Statement</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -246,17 +298,21 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         </div>
       </header>
 
-      {/* Notifications and Help Modals */}
-      <NotificationsModal
-        isOpen={isNotifOpen}
-        onClose={() => setIsNotifOpen(false)}
-        onNavigateSection={(sec) => setActiveSection?.(sec)}
-      />
+      {/* Notifications Drawer */}
+      {isNotifOpen && (
+        <NotificationsModal
+          isOpen={isNotifOpen}
+          onClose={() => setIsNotifOpen(false)}
+        />
+      )}
 
-      <HelpSupportModal
-        isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
-      />
+      {/* Help & Support Drawer */}
+      {isHelpOpen && (
+        <HelpSupportModal
+          isOpen={isHelpOpen}
+          onClose={() => setIsHelpOpen(false)}
+        />
+      )}
     </>
   );
 };
