@@ -96,7 +96,14 @@ const PRESET_MERCHANTS = [
 ];
 
 export const ScanPayScreen: React.FC<ScanPayScreenProps> = ({ onBackToHome, onOpenHistory }) => {
-  const { accountBalance, sendPayment } = useApp();
+  const {
+    accountBalance,
+    sendPayment,
+    safeDiscretionaryBudget,
+    currentDiscretionarySpent,
+    unpaidLockedAmount,
+    totalLockedAmount
+  } = useApp();
 
   const [flashlight, setFlashlight] = useState(false);
   const [cameraActive, setCameraActive] = useState(true);
@@ -106,10 +113,12 @@ export const ScanPayScreen: React.FC<ScanPayScreenProps> = ({ onBackToHome, onOp
   const [manualUpiId, setManualUpiId] = useState<string>('');
   const [manualMobile, setManualMobile] = useState<string>('');
 
-  // Flow steps: 'SCANNER' | 'AMOUNT' | 'CONFIRM' | 'PIN' | 'SUCCESS'
-  const [step, setStep] = useState<'SCANNER' | 'AMOUNT' | 'CONFIRM' | 'PIN' | 'SUCCESS'>('SCANNER');
+  // Flow steps: 'SCANNER' | 'AMOUNT' | 'RESERVED_WARNING' | 'CONFIRM' | 'PIN' | 'SUCCESS'
+  const [step, setStep] = useState<'SCANNER' | 'AMOUNT' | 'RESERVED_WARNING' | 'CONFIRM' | 'PIN' | 'SUCCESS'>('SCANNER');
   const [pin, setPin] = useState<string>('');
   const [completedTx, setCompletedTx] = useState<any>(null);
+  const [reservedConfirmed, setReservedConfirmed] = useState(false);
+  const [checkboxAccepted, setCheckboxAccepted] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -154,12 +163,25 @@ export const ScanPayScreen: React.FC<ScanPayScreenProps> = ({ onBackToHome, onOp
     handleScanDetected(custom as any);
   };
 
+  // Safe spending & reserved money calculations
+  const numAmount = parseFloat(enteredAmount) || 0;
+  const currentDiscretionaryRemaining = Math.max(0, safeDiscretionaryBudget - currentDiscretionarySpent);
+  const freeLiquidBalance = Math.max(0, accountBalance - unpaidLockedAmount);
+  const safeAvailableLimit = Math.min(currentDiscretionaryRemaining, freeLiquidBalance);
+  const isReservedMoneyBreach = numAmount > safeAvailableLimit;
+  const reservedMoneyDeficit = isReservedMoneyBreach ? numAmount - safeAvailableLimit : 0;
+
   const handleProceedToConfirm = (e: React.FormEvent) => {
     e.preventDefault();
     const num = parseFloat(enteredAmount) || 0;
     if (num <= 0) return;
     if (num > accountBalance) {
       alert('Amount exceeds your available bank balance.');
+      return;
+    }
+    // Check if this payment dips into the locked budget vault
+    if (isReservedMoneyBreach && !reservedConfirmed) {
+      setStep('RESERVED_WARNING');
       return;
     }
     setStep('CONFIRM');
@@ -213,6 +235,8 @@ export const ScanPayScreen: React.FC<ScanPayScreenProps> = ({ onBackToHome, onOp
     setEnteredAmount('');
     setEnteredNote('');
     setPin('');
+    setReservedConfirmed(false);
+    setCheckboxAccepted(false);
     setStep('SCANNER');
   };
 
@@ -452,6 +476,30 @@ export const ScanPayScreen: React.FC<ScanPayScreenProps> = ({ onBackToHome, onOp
                 </button>
               ))}
             </div>
+
+            {/* Real-time Reserved Money Warning Banner */}
+            {isReservedMoneyBreach && (
+              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 text-rose-950 text-xs space-y-1.5 text-left animate-fadeIn mt-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-extrabold flex items-center gap-1.5 text-rose-700">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Dipping into Reserved Money!</span>
+                  </span>
+                  {safeAvailableLimit > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setEnteredAmount(safeAvailableLimit.toString())}
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 transition-colors"
+                    >
+                      Cap to Safe ₹{safeAvailableLimit.toLocaleString('en-IN')}
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11px] text-rose-800 leading-snug">
+                  Safe discretionary balance is <strong>₹{safeAvailableLimit.toLocaleString('en-IN')}</strong>. This QR payment draws <strong>₹{reservedMoneyDeficit.toLocaleString('en-IN')}</strong> from your locked Rent & EMI vault.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Note Input */}
@@ -484,6 +532,117 @@ export const ScanPayScreen: React.FC<ScanPayScreenProps> = ({ onBackToHome, onOp
             </button>
           </div>
         </form>
+      )}
+
+      {/* STEP: CRITICAL RESERVED MONEY WARNING GUARDRAIL */}
+      {step === 'RESERVED_WARNING' && selectedMerchant && (
+        <div className="bg-white rounded-3xl p-6 border border-rose-300 shadow-xl space-y-5 animate-fadeIn">
+          <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-600/30">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-rose-900">
+                  🚨 Warning: QR Payment Exceeds Free Spending!
+                </h4>
+                <p className="text-xs text-rose-800 mt-0.5 leading-relaxed">
+                  Paying <strong>₹{numAmount.toLocaleString('en-IN')}</strong> to <strong>{selectedMerchant.name}</strong> will consume funds locked in your Reserved Money Vault for mandatory expenses.
+                </p>
+              </div>
+            </div>
+
+            {/* Three Metric Breakdown Cards */}
+            <div className="bg-white/90 rounded-xl p-3 border border-rose-200 grid grid-cols-3 gap-2 text-center text-xs">
+              <div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase">Safe Free Balance</div>
+                <div className="text-sm font-black text-emerald-600">
+                  ₹{safeAvailableLimit.toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase">Payment Amount</div>
+                <div className="text-sm font-black text-slate-900">
+                  ₹{numAmount.toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-rose-600 font-bold uppercase">Reserved Deficit</div>
+                <div className="text-sm font-black text-rose-600">
+                  -₹{reservedMoneyDeficit.toLocaleString('en-IN')}
+                </div>
+              </div>
+            </div>
+
+            {/* Endangered Commitments List */}
+            <div className="space-y-1 text-xs">
+              <div className="font-bold text-rose-950 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-rose-600" />
+                <span>Reserved Commitments (₹{unpaidLockedAmount.toLocaleString('en-IN')}) at Risk:</span>
+              </div>
+              <div className="text-[11px] text-rose-800 leading-relaxed pl-4 space-y-0.5">
+                <p>• SBI Home Loan EMI (₹38,000) & Apartment Rent (₹25,000) are due soon.</p>
+                <p>• If you spend this money, you may face bounce charges, overdue interest or bill penalties.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Guardrail Action 1: Auto-adjust to safe amount */}
+          {safeAvailableLimit > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setEnteredAmount(safeAvailableLimit.toString());
+                setStep('CONFIRM');
+              }}
+              className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Adjust to Safe Limit (₹{safeAvailableLimit.toLocaleString('en-IN')}) & Proceed</span>
+            </button>
+          )}
+
+          {/* Guardrail Action 2: Explicit Checkbox Confirmation */}
+          <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+            <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700 select-none">
+              <input
+                type="checkbox"
+                checked={checkboxAccepted}
+                onChange={e => setCheckboxAccepted(e.target.checked)}
+                className="mt-0.5 rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4 accent-rose-600 cursor-pointer"
+              />
+              <span className="font-semibold leading-relaxed">
+                I understand that this QR payment consumes <strong className="text-rose-600">₹{reservedMoneyDeficit.toLocaleString('en-IN')}</strong> of my locked reserved money for Rent/EMI, and I accept the risk of overspending.
+              </span>
+            </label>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setStep('AMOUNT')}
+                className="flex-1 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+              >
+                Change Amount
+              </button>
+
+              <button
+                type="button"
+                disabled={!checkboxAccepted}
+                onClick={() => {
+                  setReservedConfirmed(true);
+                  setStep('CONFIRM');
+                }}
+                className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+                  checkboxAccepted
+                    ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                Proceed Anyway
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* STEP 3: PAYMENT CONFIRMATION SCREEN */}

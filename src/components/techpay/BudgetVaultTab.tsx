@@ -20,7 +20,8 @@ import {
   ShoppingBag,
   Car,
   Utensils,
-  Coins
+  Coins,
+  Calculator
 } from 'lucide-react';
 
 interface BudgetVaultTabProps {
@@ -40,7 +41,9 @@ export const BudgetVaultTab: React.FC<BudgetVaultTabProps> = ({ onOpenMakePaymen
     addCommitment,
     isPrivacyMode,
     togglePrivacyMode,
-    formatPrivateAmount
+    formatPrivateAmount,
+    loanRecords,
+    setIsLoanTrackerOpen
   } = useApp();
 
   const [unmaskedItems, setUnmaskedItems] = useState<Record<string, boolean>>({});
@@ -108,6 +111,14 @@ export const BudgetVaultTab: React.FC<BudgetVaultTabProps> = ({ onOpenMakePaymen
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsLoanTrackerOpen(true)}
+            className="px-3 py-2 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/40 text-[#5F259F] dark:text-purple-300 font-bold text-xs flex items-center gap-1.5 shadow-xs hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-all"
+          >
+            <Calculator className="w-3.5 h-3.5" />
+            <span>Loan Ledger ({loanRecords.length})</span>
+          </button>
+
           <button
             type="button"
             onClick={togglePrivacyMode}

@@ -222,3 +222,21 @@ export interface ChatMessage {
   }[];
 }
 
+export interface LoanRecord {
+  id: string;
+  type: 'GIVEN' | 'BORROWED'; // GIVEN = lent to someone (receivable), BORROWED = taken from someone (payable)
+  personName: string;
+  phoneNumber?: string;
+  upiId?: string;
+  principalAmount: number;
+  interestRate: number; // percentage (e.g. 12% p.a. or 1.5% p.m.)
+  interestPeriod: 'ANNUAL' | 'MONTHLY';
+  interestType: 'SIMPLE' | 'COMPOUND';
+  startDate: string; // YYYY-MM-DD
+  dueDate?: string; // YYYY-MM-DD
+  notes?: string;
+  status: 'PENDING' | 'SETTLED' | 'OVERDUE';
+  settledAmount?: number;
+}
+
+

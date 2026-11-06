@@ -24,6 +24,7 @@ import { DocumentIntelligenceTab } from './components/tax/DocumentIntelligenceTa
 import { VoiceCaModal } from './components/VoiceCaModal';
 import { PaymentDetailModal } from './components/PaymentDetailModal';
 import { ReportExportModal } from './components/ReportExportModal';
+import { LoanInterestTrackerModal } from './components/techpay/LoanInterestTrackerModal';
 
 import {
   Zap,
@@ -65,7 +66,9 @@ const MainLayout: React.FC = () => {
     setActiveFace,
     anomalies,
     isCheckBalanceOpen,
-    setIsCheckBalanceOpen
+    setIsCheckBalanceOpen,
+    isLoanTrackerOpen,
+    setIsLoanTrackerOpen
   } = useApp();
 
   const [mainSection, setMainSection] = useState<MainSectionType>('home');
@@ -308,6 +311,16 @@ const MainLayout: React.FC = () => {
       <CheckBalanceModal
         isOpen={isCheckBalanceOpen}
         onClose={() => setIsCheckBalanceOpen(false)}
+      />
+
+      {/* P2P Borrow & Lend Ledger & Interest Calculator Modal */}
+      <LoanInterestTrackerModal
+        isOpen={isLoanTrackerOpen}
+        onClose={() => setIsLoanTrackerOpen(false)}
+        onOpenMakePayment={(rec) => {
+          setMakePaymentDefault(rec || null);
+          setIsMakePaymentOpen(true);
+        }}
       />
 
       {/* Footer */}

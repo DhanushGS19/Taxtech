@@ -101,9 +101,11 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
   const [amount, setAmount] = useState<string>('680');
   const [description, setDescription] = useState('Cold Brew Coffee & Croissant');
   const [selectedLocation, setSelectedLocation] = useState<PaymentLocation>(PRESET_LOCATIONS[0]);
-  const [step, setStep] = useState<'FORM' | 'PIN' | 'SUCCESS'>('FORM');
+  const [step, setStep] = useState<'FORM' | 'RESERVED_WARNING' | 'PIN' | 'SUCCESS'>('FORM');
   const [pin, setPin] = useState('');
   const [paymentResultWarning, setPaymentResultWarning] = useState<string | null>(null);
+  const [reservedWarningAcknowledged, setReservedWarningAcknowledged] = useState(false);
+  const [checkboxAccepted, setCheckboxAccepted] = useState(false);
 
   useEffect(() => {
     if (defaultData) {
@@ -127,8 +129,17 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
     recipientName
   );
 
-  // Expenditure Control Calculation
+  // Expenditure Control & Reserved Vault Protection
   const isFixedCommitment = taxPreview.isFixedCommitment || false;
+  const currentDiscretionaryRemaining = Math.max(0, safeDiscretionaryBudget - currentDiscretionarySpent);
+  const freeLiquidBalance = Math.max(0, accountBalance - unpaidLockedAmount);
+  // Safe discretionary limit before dipping into reserved vault:
+  const safeAvailableLimit = isFixedCommitment ? accountBalance : Math.min(currentDiscretionaryRemaining, freeLiquidBalance);
+
+  // Checks if this payment eats into locked reserved funds (Rent, EMI, School Fees)
+  const isReservedMoneyBreach = !isFixedCommitment && numAmount > safeAvailableLimit;
+  const reservedMoneyDeficit = isReservedMoneyBreach ? numAmount - safeAvailableLimit : 0;
+
   const currentRemaining = safeDiscretionaryBudget - currentDiscretionarySpent;
   const afterPaymentRemaining = currentRemaining - numAmount;
   const isOverspendingRisk = !isFixedCommitment && afterPaymentRemaining < 0;
@@ -139,6 +150,11 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
     if (numAmount <= 0) return;
     if (numAmount > accountBalance) {
       alert('Amount exceeds your available bank balance.');
+      return;
+    }
+    // Guardrail: Intercept if attempting to use reserved money
+    if (isReservedMoneyBreach && !reservedWarningAcknowledged) {
+      setStep('RESERVED_WARNING');
       return;
     }
     setStep('PIN');
@@ -192,6 +208,8 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
     setStep('FORM');
     setPin('');
     setPaymentResultWarning(null);
+    setReservedWarningAcknowledged(false);
+    setCheckboxAccepted(false);
     onClose();
   };
 
@@ -206,10 +224,22 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-slate-900">
-                {step === 'FORM' ? 'Send Money via UPI' : step === 'PIN' ? 'Enter 4-Digit UPI PIN' : 'Payment Successful'}
+                {step === 'FORM'
+                  ? 'Send Money via UPI'
+                  : step === 'RESERVED_WARNING'
+                  ? '⚠️ Reserved Money Alert'
+                  : step === 'PIN'
+                  ? 'Enter 4-Digit UPI PIN'
+                  : 'Payment Successful'}
               </h3>
               <p className="text-[11px] text-slate-500">
-                {step === 'FORM' ? 'With Location History & Tax Tracking' : step === 'PIN' ? 'Secured by HDFC Bank' : 'Recorded in Ledger'}
+                {step === 'FORM'
+                  ? 'With Location History & Tax Tracking'
+                  : step === 'RESERVED_WARNING'
+                  ? 'Locked Vault Protection Gate'
+                  : step === 'PIN'
+                  ? 'Secured by HDFC Bank'
+                  : 'Recorded in Ledger'}
               </p>
             </div>
           </div>
@@ -264,6 +294,30 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
                   />
                 </div>
               </div>
+
+              {/* Real-time Reserved Money Warning Banner */}
+              {isReservedMoneyBreach && (
+                <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 text-rose-950 text-xs space-y-1.5 animate-fadeIn">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-extrabold flex items-center gap-1.5 text-rose-700">
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>Attempting to Use Reserved Money!</span>
+                    </span>
+                    {safeAvailableLimit > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setAmount(safeAvailableLimit.toString())}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 transition-colors"
+                      >
+                        Cap to Safe ₹{safeAvailableLimit.toLocaleString('en-IN')}
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-rose-800 leading-snug">
+                    Safe discretionary spending left is <strong>₹{safeAvailableLimit.toLocaleString('en-IN')}</strong>. This amount dips <strong>₹{reservedMoneyDeficit.toLocaleString('en-IN')}</strong> into your locked Rent & EMI vault.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-slate-600 font-bold mb-1">Payment Note / Description</label>
@@ -377,6 +431,117 @@ export const MakePaymentModal: React.FC<MakePaymentModalProps> = ({
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
+        )}
+
+        {/* STEP 1.5: CRITICAL RESERVED MONEY WARNING GUARDRAIL */}
+        {step === 'RESERVED_WARNING' && (
+          <div className="p-6 space-y-5 animate-fadeIn">
+            <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-600/30">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-rose-900">
+                    🚨 Warning: Attempting to Use Reserved Money!
+                  </h4>
+                  <p className="text-xs text-rose-800 mt-0.5 leading-relaxed">
+                    This payment of <strong>₹{numAmount.toLocaleString('en-IN')}</strong> exceeds your free discretionary balance and attempts to withdraw from money reserved for mandatory commitments.
+                  </p>
+                </div>
+              </div>
+
+              {/* Three Metric Breakdown Cards */}
+              <div className="bg-white/90 rounded-xl p-3 border border-rose-200 grid grid-cols-3 gap-2 text-center text-xs">
+                <div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Safe Free Balance</div>
+                  <div className="text-sm font-black text-emerald-600">
+                    ₹{safeAvailableLimit.toLocaleString('en-IN')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Payment Amount</div>
+                  <div className="text-sm font-black text-slate-900">
+                    ₹{numAmount.toLocaleString('en-IN')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-rose-600 font-bold uppercase">Reserved Deficit</div>
+                  <div className="text-sm font-black text-rose-600">
+                    -₹{reservedMoneyDeficit.toLocaleString('en-IN')}
+                  </div>
+                </div>
+              </div>
+
+              {/* Endangered Commitments List */}
+              <div className="space-y-1 text-xs">
+                <div className="font-bold text-rose-950 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Locked Commitments (₹{unpaidLockedAmount.toLocaleString('en-IN')}) Endangered:</span>
+                </div>
+                <div className="text-[11px] text-rose-800 leading-relaxed pl-4 space-y-0.5">
+                  <p>• SBI Home Loan EMI (₹38,000) & Apartment Flat Rent (₹25,000) are due soon.</p>
+                  <p>• Dipping into reserved money risks bank ECS bounce charges, penalty interest, or landlord dispute.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Guardrail Action 1: Auto-adjust to safe amount */}
+            {safeAvailableLimit > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAmount(safeAvailableLimit.toString());
+                  setStep('PIN');
+                }}
+                className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Adjust Payment to Safe Limit of ₹{safeAvailableLimit.toLocaleString('en-IN')} & Proceed</span>
+              </button>
+            )}
+
+            {/* Guardrail Action 2: Explicit Checkbox Confirmation */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700 select-none">
+                <input
+                  type="checkbox"
+                  checked={checkboxAccepted}
+                  onChange={e => setCheckboxAccepted(e.target.checked)}
+                  className="mt-0.5 rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4 accent-rose-600 cursor-pointer"
+                />
+                <span className="font-semibold leading-relaxed">
+                  I acknowledge that this payment consumes <strong className="text-rose-600">₹{reservedMoneyDeficit.toLocaleString('en-IN')}</strong> of my locked reserved money for Rent/EMI, and I accept the risk of overspending.
+                </span>
+              </label>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setStep('FORM')}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+                >
+                  Edit Amount
+                </button>
+
+                <button
+                  type="button"
+                  disabled={!checkboxAccepted}
+                  onClick={() => {
+                    setReservedWarningAcknowledged(true);
+                    setStep('PIN');
+                  }}
+                  className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+                    checkboxAccepted
+                      ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  Proceed to PIN Anyway
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* STEP 2: UPI PIN KEYPAD */}

@@ -2,6 +2,7 @@ import {
   AutoPayMandate,
   FamilyProfile,
   FixedCommitment,
+  LoanRecord,
   PaymentTransaction,
   SipFund,
   TaxCalendarEvent
@@ -543,4 +544,83 @@ export const TAX_CALENDAR_EVENTS: TaxCalendarEvent[] = [
     urgent: false
   }
 ];
+
+export const INITIAL_LOAN_RECORDS: LoanRecord[] = [
+  {
+    id: 'loan-given-1',
+    type: 'GIVEN',
+    personName: 'Rohan Verma',
+    phoneNumber: '+91 98450 12345',
+    upiId: 'rohan.v@okaxis',
+    principalAmount: 25000,
+    interestRate: 12,
+    interestPeriod: 'ANNUAL',
+    interestType: 'SIMPLE',
+    startDate: '2024-09-01',
+    dueDate: '2024-12-01',
+    notes: 'Emergency medical loan for clinic fees',
+    status: 'PENDING'
+  },
+  {
+    id: 'loan-given-2',
+    type: 'GIVEN',
+    personName: 'Deepak Patil (Shopkeeper)',
+    phoneNumber: '+91 97412 88990',
+    upiId: 'deepak.patil@paytm',
+    principalAmount: 15000,
+    interestRate: 1.5,
+    interestPeriod: 'MONTHLY',
+    interestType: 'SIMPLE',
+    startDate: '2024-10-15',
+    dueDate: '2024-11-30',
+    notes: 'Inventory restock short-term advance',
+    status: 'PENDING'
+  },
+  {
+    id: 'loan-given-3',
+    type: 'GIVEN',
+    personName: 'Vikram Joshi',
+    phoneNumber: '+91 98112 34567',
+    upiId: 'v.joshi@oksbi',
+    principalAmount: 50000,
+    interestRate: 10,
+    interestPeriod: 'ANNUAL',
+    interestType: 'COMPOUND',
+    startDate: '2024-06-01',
+    dueDate: '2024-12-31',
+    notes: 'Studio hardware bridge loan',
+    status: 'PENDING'
+  },
+  {
+    id: 'loan-borrowed-1',
+    type: 'BORROWED',
+    personName: 'Amit Uncle (Family)',
+    phoneNumber: '+91 99001 22334',
+    upiId: 'amit.sharma@hdfcbank',
+    principalAmount: 50000,
+    interestRate: 0,
+    interestPeriod: 'ANNUAL',
+    interestType: 'SIMPLE',
+    startDate: '2024-08-01',
+    dueDate: '2025-01-31',
+    notes: 'Apartment registration deposit help (0% interest)',
+    status: 'PENDING'
+  },
+  {
+    id: 'loan-borrowed-2',
+    type: 'BORROWED',
+    personName: 'Suresh Kumar',
+    phoneNumber: '+91 94481 77665',
+    upiId: 'suresh.k@icici',
+    principalAmount: 20000,
+    interestRate: 12,
+    interestPeriod: 'ANNUAL',
+    interestType: 'SIMPLE',
+    startDate: '2024-10-01',
+    dueDate: '2024-11-25',
+    notes: 'Car sudden engine overhaul expense',
+    status: 'PENDING'
+  }
+];
+
 

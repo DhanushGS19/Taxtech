@@ -5,6 +5,7 @@ import {
   ChatMessage,
   FamilyProfile,
   FixedCommitment,
+  LoanRecord,
   PaymentLocation,
   PaymentTransaction,
   RegimeComparison,
@@ -18,6 +19,7 @@ import { TransactionIntelligenceEngine } from '../engine/transactionIntelligence
 import {
   INITIAL_AUTOPAY_MANDATES,
   INITIAL_FIXED_COMMITMENTS,
+  INITIAL_LOAN_RECORDS,
   INITIAL_PROFILES,
   INITIAL_SIP_FUNDS,
   INITIAL_TRANSACTIONS,
@@ -97,6 +99,12 @@ interface AppContextType {
   setActiveLocation: (loc: string) => void;
   walletBalance: number;
   rewardsCount: number;
+  loanRecords: LoanRecord[];
+  addLoanRecord: (record: Omit<LoanRecord, 'id'>) => void;
+  updateLoanRecord: (id: string, updates: Partial<LoanRecord>) => void;
+  deleteLoanRecord: (id: string) => void;
+  isLoanTrackerOpen: boolean;
+  setIsLoanTrackerOpen: (open: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -183,6 +191,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return s ? JSON.parse(s) : INITIAL_FIXED_COMMITMENTS;
   });
 
+  const [loanRecords, setLoanRecords] = useState<LoanRecord[]>(() => {
+    const s = localStorage.getItem('tp_loan_records');
+    return s ? JSON.parse(s) : INITIAL_LOAN_RECORDS;
+  });
+  const [isLoanTrackerOpen, setIsLoanTrackerOpen] = useState<boolean>(false);
+
   const [autoPayMandates, setAutoPayMandates] = useState<AutoPayMandate[]>(INITIAL_AUTOPAY_MANDATES);
   const [sipFunds, setSipFunds] = useState<SipFund[]>(INITIAL_SIP_FUNDS);
   const [calendarEvents, setCalendarEvents] = useState<TaxCalendarEvent[]>(TAX_CALENDAR_EVENTS);
@@ -210,6 +224,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('tp_commitments', JSON.stringify(commitments));
   }, [commitments]);
+
+  useEffect(() => {
+    localStorage.setItem('tp_loan_records', JSON.stringify(loanRecords));
+  }, [loanRecords]);
 
   // Fixed Budget & Locked Vault Calculations
   const totalLockedAmount = useMemo(() => {
@@ -419,6 +437,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addCommitment = (com: FixedCommitment) => {
     setCommitments(prev => [...prev, com]);
+  };
+
+  const addLoanRecord = (record: Omit<LoanRecord, 'id'>) => {
+    const newRecord: LoanRecord = {
+      ...record,
+      id: `loan-${Date.now()}`
+    };
+    setLoanRecords(prev => [newRecord, ...prev]);
+  };
+
+  const updateLoanRecord = (id: string, updates: Partial<LoanRecord>) => {
+    setLoanRecords(prev =>
+      prev.map(r => (r.id === id ? { ...r, ...updates } : r))
+    );
+  };
+
+  const deleteLoanRecord = (id: string) => {
+    setLoanRecords(prev => prev.filter(r => r.id !== id));
   };
 
   const toggleAutoPay = (id: string) => {
@@ -652,7 +688,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeLocation,
         setActiveLocation: handleSetActiveLocation,
         walletBalance,
-        rewardsCount
+        rewardsCount,
+        loanRecords,
+        addLoanRecord,
+        updateLoanRecord,
+        deleteLoanRecord,
+        isLoanTrackerOpen,
+        setIsLoanTrackerOpen
       }}
     >
       {children}

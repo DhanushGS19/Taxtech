@@ -92,7 +92,10 @@ export const PaymentHome: React.FC<PaymentHomeProps> = ({
     theme,
     toggleTheme,
     walletBalance,
-    rewardsCount
+    rewardsCount,
+    overspendingAlert,
+    loanRecords,
+    setIsLoanTrackerOpen
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,8 +181,21 @@ export const PaymentHome: React.FC<PaymentHomeProps> = ({
       accentBorder: 'border-purple-400/30',
       icon: Landmark,
       tag: 'DICGC Insured'
+    },
+    {
+      id: 6,
+      badge: 'P2P Udhaar & Interest',
+      title: 'Calculate Interest & Track Loans',
+      subtitle: 'Keep accurate record of money lent or borrowed • Simple/Compound interest & WhatsApp reminders',
+      ctaText: 'Open Calculator',
+      action: () => setIsLoanTrackerOpen(true),
+      gradient: 'from-[#1E3A8A] via-[#2563EB] to-[#4F46E5]',
+      accentBg: 'bg-blue-400/20 text-blue-200',
+      accentBorder: 'border-blue-400/30',
+      icon: Calculator,
+      tag: 'P2P Khaata'
     }
-  ], [onNavigateSection]);
+  ], [onNavigateSection, setIsLoanTrackerOpen]);
 
   // Auto-sliding banner
   useEffect(() => {
@@ -354,6 +370,55 @@ export const PaymentHome: React.FC<PaymentHomeProps> = ({
             />
           ))}
         </div>
+      </div>
+
+      {/* Reserved Money Vault Guardrail Banner */}
+      <div
+        className={`p-3.5 sm:p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs transition-all ${
+          overspendingAlert
+            ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100'
+            : 'bg-gradient-to-r from-purple-50/80 via-white to-purple-50/40 dark:from-[#251A34] dark:to-[#1C1427] border-purple-100 dark:border-purple-900/40 text-[#172033] dark:text-purple-200'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
+              overspendingAlert
+                ? 'bg-rose-600 text-white shadow-rose-600/30'
+                : 'bg-[#5F259F] text-white shadow-purple-600/20'
+            }`}
+          >
+            {overspendingAlert ? <AlertTriangle className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-sm tracking-tight">
+                {overspendingAlert ? '⚠️ Overspending Risk on Reserved Money' : 'Reserved Money Vault Guardrail'}
+              </span>
+              <span
+                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                  overspendingAlert
+                    ? 'bg-rose-600 text-white'
+                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                }`}
+              >
+                {overspendingAlert ? 'Deficit Warning' : '100% Protected'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
+              ₹{unpaidLockedAmount.toLocaleString('en-IN')} locked for EMI/Rent • Safe free discretionary allowance: <strong>₹{freeSpendingRemaining.toLocaleString('en-IN')}</strong>
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onNavigateSection('budgets')}
+          className="self-end sm:self-center px-3.5 py-2 rounded-xl bg-[#5F259F] hover:bg-[#4E1E82] text-white font-extrabold text-xs shrink-0 shadow-xs active:scale-95 transition-all flex items-center gap-1.5"
+        >
+          <span>View Budget Vault</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* ================================================================ */}
@@ -913,6 +978,88 @@ export const PaymentHome: React.FC<PaymentHomeProps> = ({
               Spending Analytics
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setIsLoanTrackerOpen(true)}
+            className="flex flex-col items-center group focus:outline-none col-span-2 sm:col-span-1"
+          >
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-[#5F259F] dark:text-purple-300 border border-purple-200 dark:border-purple-800 flex items-center justify-center group-hover:scale-105 active:scale-95 transition-all relative">
+              <Calculator className="w-5 h-5" />
+              {loanRecords.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#5F259F] text-white text-[9px] font-black flex items-center justify-center">
+                  {loanRecords.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[11px] font-semibold text-[#172033] dark:text-slate-200 mt-1.5 leading-tight">
+              Interest & Loans
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Featured P2P Loan & Interest Ledger Card */}
+      <div className="bg-white dark:bg-[#21152D] rounded-2xl border border-[#E8E1F2] dark:border-[#3D2854] p-4 sm:p-5 shadow-xs space-y-3">
+        <div className="flex items-center justify-between pb-1 border-b border-[#F6F3FA] dark:border-[#2E1F3D]">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#5F259F] text-white flex items-center justify-center">
+              <Calculator className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-xs sm:text-sm font-extrabold text-[#172033] dark:text-white">
+                P2P Udhaar & Interest Ledger
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Live interest calculation on money given or borrowed
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsLoanTrackerOpen(true)}
+            className="text-xs font-bold text-[#5F259F] dark:text-[#A855F7] hover:underline flex items-center gap-0.5"
+          >
+            <span>Open Calculator</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          {/* Given / Receivable */}
+          <div
+            onClick={() => setIsLoanTrackerOpen(true)}
+            className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 cursor-pointer hover:border-emerald-400 transition-all space-y-1"
+          >
+            <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300">
+              <span className="text-[10px] font-bold uppercase tracking-wider">Money Given (Lent)</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20">Receivable</span>
+            </div>
+            <div className="text-base font-black text-emerald-900 dark:text-emerald-200">
+              ₹{loanRecords.filter(r => r.type === 'GIVEN' && r.status !== 'SETTLED').reduce((s, r) => s + r.principalAmount, 0).toLocaleString('en-IN')}
+            </div>
+            <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
+              {loanRecords.filter(r => r.type === 'GIVEN').length} active contracts • Simple & compound interest
+            </p>
+          </div>
+
+          {/* Borrowed / Payable */}
+          <div
+            onClick={() => setIsLoanTrackerOpen(true)}
+            className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 cursor-pointer hover:border-amber-400 transition-all space-y-1"
+          >
+            <div className="flex items-center justify-between text-amber-800 dark:text-amber-300">
+              <span className="text-[10px] font-bold uppercase tracking-wider">Money Borrowed (Owed)</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-500/20">Payable</span>
+            </div>
+            <div className="text-base font-black text-amber-900 dark:text-amber-200">
+              ₹{loanRecords.filter(r => r.type === 'BORROWED' && r.status !== 'SETTLED').reduce((s, r) => s + r.principalAmount, 0).toLocaleString('en-IN')}
+            </div>
+            <p className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
+              {loanRecords.filter(r => r.type === 'BORROWED').length} active records • Direct UPI payback
+            </p>
+          </div>
         </div>
       </div>
 
