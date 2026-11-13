@@ -239,4 +239,18 @@ export interface LoanRecord {
   settledAmount?: number;
 }
 
+export type PrivacyLevel = 'NORMAL' | 'PRIVACY' | 'SECURE';
+
+export interface PrivacySettings {
+  level: PrivacyLevel;
+  hideBalanceByDefault: boolean;
+  hideTransactionAmounts: boolean;
+  maskAccountDetails: boolean;
+  hideRecentActivityOnHome: boolean;
+  requireBiometricForSensitive: boolean;
+  autoLockTimeoutSeconds: number; // 0 = immediate, 30, 60, 300
+  isEmergencyLocked: boolean;
+}
+
+
 

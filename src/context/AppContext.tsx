@@ -8,6 +8,8 @@ import {
   LoanRecord,
   PaymentLocation,
   PaymentTransaction,
+  PrivacyLevel,
+  PrivacySettings,
   RegimeComparison,
   SipFund,
   TaxCalendarEvent,
@@ -35,6 +37,24 @@ interface AppContextType {
   monthlyIncome: number;
   isPrivacyMode: boolean;
   togglePrivacyMode: () => void;
+  privacyLevel: PrivacyLevel;
+  setPrivacyLevel: (level: PrivacyLevel) => void;
+  privacySettings: PrivacySettings;
+  updatePrivacySettings: (settings: Partial<PrivacySettings>) => void;
+  isRecentAmountsRevealed: boolean;
+  setIsRecentAmountsRevealed: (revealed: boolean) => void;
+  toggleRecentAmountsRevealed: () => void;
+  isBiometricAuthOpen: boolean;
+  setIsBiometricAuthOpen: (open: boolean) => void;
+  biometricAuthReason: string;
+  triggerBiometricAuth: (reason: string, onSuccess: () => void) => void;
+  confirmBiometricSuccess: () => void;
+  isPrivacyShieldModalOpen: boolean;
+  setIsPrivacyShieldModalOpen: (open: boolean) => void;
+  formatMaskedUpi: (upiId: string, forceShow?: boolean) => string;
+  formatMaskedAccount: (acc: string, forceShow?: boolean) => string;
+  lockEmergencyAccount: () => void;
+  unlockEmergencyAccount: () => void;
   isBalanceRevealed: boolean;
   setIsBalanceRevealed: (revealed: boolean) => void;
   isCheckBalanceOpen: boolean;
@@ -114,30 +134,132 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [accountBalance, setAccountBalance] = useState<number>(64850);
   const [monthlyIncome, setMonthlyIncome] = useState<number>(150000);
 
-  // Privacy & Balance Masking (PhonePe / Google Pay Reference)
-  const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('tp_privacy_mode');
-    return saved !== null ? JSON.parse(saved) : true;
+  // TechPay Privacy Shield & Security Engine
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(() => {
+    const saved = localStorage.getItem('tp_privacy_settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return {
+      level: 'PRIVACY',
+      hideBalanceByDefault: true,
+      hideTransactionAmounts: true,
+      maskAccountDetails: true,
+      hideRecentActivityOnHome: false,
+      requireBiometricForSensitive: true,
+      autoLockTimeoutSeconds: 60,
+      isEmergencyLocked: false
+    };
   });
-  const [isBalanceRevealed, setIsBalanceRevealed] = useState<boolean>(false);
-  const [isCheckBalanceOpen, setIsCheckBalanceOpen] = useState<boolean>(false);
 
-  const togglePrivacyMode = () => {
-    setIsPrivacyMode(prev => {
-      const next = !prev;
-      localStorage.setItem('tp_privacy_mode', JSON.stringify(next));
-      if (next) {
+  const privacyLevel = privacySettings.level;
+  const isPrivacyMode = privacySettings.level !== 'NORMAL';
+
+  const updatePrivacySettings = (partial: Partial<PrivacySettings>) => {
+    setPrivacySettings(prev => {
+      const next = { ...prev, ...partial };
+      localStorage.setItem('tp_privacy_settings', JSON.stringify(next));
+      if (next.level !== 'NORMAL' || next.hideBalanceByDefault) {
         setIsBalanceRevealed(false);
+        setIsRecentAmountsRevealed(false);
       }
       return next;
     });
   };
 
+  const setPrivacyLevel = (level: PrivacyLevel) => {
+    updatePrivacySettings({ level });
+  };
+
+  const togglePrivacyMode = () => {
+    setPrivacyLevel(privacyLevel === 'NORMAL' ? 'PRIVACY' : 'NORMAL');
+  };
+
+  const [isBalanceRevealed, setIsBalanceRevealed] = useState<boolean>(false);
+  const [isRecentAmountsRevealed, setIsRecentAmountsRevealed] = useState<boolean>(false);
+  const [isCheckBalanceOpen, setIsCheckBalanceOpen] = useState<boolean>(false);
+  const [isPrivacyShieldModalOpen, setIsPrivacyShieldModalOpen] = useState<boolean>(false);
+
+  // Biometric / App PIN Authentication Simulator
+  const [isBiometricAuthOpen, setIsBiometricAuthOpen] = useState<boolean>(false);
+  const [biometricAuthReason, setBiometricAuthReason] = useState<string>('Unlock Protected Financial Details');
+  const biometricSuccessCallback = React.useRef<(() => void) | null>(null);
+
+  const triggerBiometricAuth = (reason: string, onSuccess: () => void) => {
+    if (privacySettings.level === 'SECURE' || privacySettings.requireBiometricForSensitive) {
+      setBiometricAuthReason(reason);
+      biometricSuccessCallback.current = onSuccess;
+      setIsBiometricAuthOpen(true);
+    } else {
+      onSuccess();
+    }
+  };
+
+  const confirmBiometricSuccess = () => {
+    setIsBiometricAuthOpen(false);
+    if (biometricSuccessCallback.current) {
+      biometricSuccessCallback.current();
+      biometricSuccessCallback.current = null;
+    }
+  };
+
+  const toggleRecentAmountsRevealed = () => {
+    if (!isRecentAmountsRevealed) {
+      triggerBiometricAuth('Reveal Recent Transaction Amounts', () => {
+        setIsRecentAmountsRevealed(true);
+      });
+    } else {
+      setIsRecentAmountsRevealed(false);
+    }
+  };
+
+  // Emergency Account Freeze
+  const lockEmergencyAccount = () => {
+    updatePrivacySettings({ isEmergencyLocked: true, level: 'SECURE' });
+    setIsBalanceRevealed(false);
+    setIsRecentAmountsRevealed(false);
+  };
+
+  const unlockEmergencyAccount = () => {
+    updatePrivacySettings({ isEmergencyLocked: false });
+  };
+
+  // Auto-hide balance on tab leave or blur for security
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && privacySettings.hideBalanceByDefault) {
+        setIsBalanceRevealed(false);
+        setIsRecentAmountsRevealed(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [privacySettings.hideBalanceByDefault]);
+
   const formatPrivateAmount = (amount: number, forceShow: boolean = false): string => {
-    if (!isPrivacyMode || forceShow) {
+    if (privacySettings.isEmergencyLocked) {
+      return '[FROZEN]';
+    }
+    if (privacyLevel === 'NORMAL' || forceShow) {
       return `₹${amount.toLocaleString('en-IN')}`;
     }
-    return '₹••••••';
+    return '₹••••••••';
+  };
+
+  const formatMaskedUpi = (upiId: string, forceShow: boolean = false): string => {
+    if (!privacySettings.maskAccountDetails || forceShow) {
+      return upiId;
+    }
+    const [user, handle] = upiId.split('@');
+    if (!user) return upiId;
+    const visible = user.slice(0, 3);
+    return `${visible}•••••@${handle || 'upi'}`;
+  };
+
+  const formatMaskedAccount = (acc: string, forceShow: boolean = false): string => {
+    return 'HDFC Bank •••• 4892';
   };
 
   const [goldBalanceGrams, setGoldBalanceGrams] = useState<number>(4.25);
@@ -633,6 +755,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         monthlyIncome,
         isPrivacyMode,
         togglePrivacyMode,
+        privacyLevel,
+        setPrivacyLevel,
+        privacySettings,
+        updatePrivacySettings,
+        isRecentAmountsRevealed,
+        setIsRecentAmountsRevealed,
+        toggleRecentAmountsRevealed,
+        isBiometricAuthOpen,
+        setIsBiometricAuthOpen,
+        biometricAuthReason,
+        triggerBiometricAuth,
+        confirmBiometricSuccess,
+        isPrivacyShieldModalOpen,
+        setIsPrivacyShieldModalOpen,
+        formatMaskedUpi,
+        formatMaskedAccount,
+        lockEmergencyAccount,
+        unlockEmergencyAccount,
         isBalanceRevealed,
         setIsBalanceRevealed,
         isCheckBalanceOpen,

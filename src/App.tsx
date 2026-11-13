@@ -25,6 +25,9 @@ import { VoiceCaModal } from './components/VoiceCaModal';
 import { PaymentDetailModal } from './components/PaymentDetailModal';
 import { ReportExportModal } from './components/ReportExportModal';
 import { LoanInterestTrackerModal } from './components/techpay/LoanInterestTrackerModal';
+import { BiometricAuthModal } from './components/techpay/BiometricAuthModal';
+import { PrivacyShieldModal } from './components/techpay/PrivacyShieldModal';
+import { WealthHubTab } from './components/techpay/WealthHubTab';
 
 import {
   Zap,
@@ -44,7 +47,8 @@ import {
   Home,
   User,
   ChevronRight,
-  QrCode
+  QrCode,
+  ArrowRightLeft
 } from 'lucide-react';
 
 export type MainSectionType = 
@@ -106,14 +110,13 @@ const MainLayout: React.FC = () => {
               setIsMakePaymentOpen(true);
             }}
             onNavigateSection={(sec: string) => {
-              if (sec === 'history' || sec === 'payments') setMainSection('history');
+              if (sec === 'payments') setMainSection('payments');
+              else if (sec === 'history') setMainSection('history');
               else if (sec === 'scan') setMainSection('scan');
               else if (sec === 'vault' || sec === 'budgets') setMainSection('budgets');
               else if (sec === 'investments' || sec === 'wealth') setMainSection('wealth');
-              else if (sec === 'autopay') {
-                setMainSection('history');
-                setPaymentSubtab('autopay');
-              } else if (sec === 'expenses') setMainSection('expenses');
+              else if (sec === 'autopay') setMainSection('payments');
+              else if (sec === 'expenses') setMainSection('expenses');
               else if (sec === 'tax') setMainSection('tax');
               else if (sec === 'profile') setMainSection('profile');
               else if (sec === 'family') setMainSection('family');
@@ -123,8 +126,19 @@ const MainLayout: React.FC = () => {
           />
         )}
 
-        {/* SECTION 2: HISTORY (PHONEPE-STYLE TRANSACTION & LOCATION HISTORY) */}
-        {(mainSection === 'history' || mainSection === 'payments') && (
+        {/* SECTION 2: PAYMENTS (TRANSFERS, BILLS, AUTOPAY HUB) */}
+        {mainSection === 'payments' && (
+          <PaymentsTab
+            onOpenMakePayment={(rec) => {
+              setMakePaymentDefault(rec || null);
+              setIsMakePaymentOpen(true);
+            }}
+            onNavigateSection={(sec) => setMainSection(sec as MainSectionType)}
+          />
+        )}
+
+        {/* SECTION 3: HISTORY (PROTECTED TRANSACTION STATEMENTS) */}
+        {mainSection === 'history' && (
           <PaymentHistoryTab
             onSelectTransaction={(id) => setSelectedTxId(id)}
             onOpenMakePayment={(rec) => {
@@ -134,7 +148,7 @@ const MainLayout: React.FC = () => {
           />
         )}
 
-        {/* SECTION 2B: DEDICATED SCAN & PAY QR SCREEN */}
+        {/* SECTION 3B: DEDICATED SCAN & PAY QR SCREEN */}
         {mainSection === 'scan' && (
           <ScanPayScreen
             onBackToHome={() => setMainSection('home')}
@@ -142,12 +156,25 @@ const MainLayout: React.FC = () => {
           />
         )}
 
-        {/* SECTION 3: EXPENSES & ANALYTICS */}
-        {mainSection === 'expenses' && (
-          <ExpensesAnalyticsTab />
+        {/* SECTION 4: WEALTH & FINANCIAL SERVICES (GOLD, SIPS, TAXSAATHI, P2P UDHAAR) */}
+        {(mainSection === 'wealth' || mainSection === 'tax' || mainSection === 'ai-assistant') && (
+          <WealthHubTab
+            initialSubTab={mainSection === 'tax' ? 'tax' : mainSection === 'ai-assistant' ? 'chat' : 'investments'}
+            onOpenVoiceCa={() => setIsVoiceCaOpen(true)}
+            onOpenReport={() => setIsReportOpen(true)}
+            onSelectTransaction={(id) => setSelectedTxId(id)}
+          />
         )}
 
-        {/* SECTION 4: BUDGETS & LOCKED COMMITMENT VAULT */}
+        {/* SECTION 5: PROFILE & SECURITY (PRIVACY SHIELD, BANK ACCOUNTS, APP LOCK) */}
+        {mainSection === 'profile' && (
+          <ProfileSecurityTab
+            onNavigateSection={(sec) => setMainSection(sec as MainSectionType)}
+            onOpenCheckBalance={() => setIsCheckBalanceOpen(true)}
+          />
+        )}
+
+        {/* SECTION 6: BUDGETS & LOCKED COMMITMENT VAULT */}
         {mainSection === 'budgets' && (
           <BudgetVaultTab
             onOpenMakePayment={(rec) => {
@@ -157,121 +184,12 @@ const MainLayout: React.FC = () => {
           />
         )}
 
-        {/* SECTION 5: WEALTH BUILDER (GOLD, SIPS & COMPOUND INTEREST) */}
-        {mainSection === 'wealth' && (
-          <InvestmentsTab />
+        {/* SECTION 7: EXPENSES & ANALYTICS */}
+        {mainSection === 'expenses' && (
+          <ExpensesAnalyticsTab />
         )}
 
-        {/* SECTION 5B: PROFILE & SECURITY (SECTION 12) */}
-        {mainSection === 'profile' && (
-          <ProfileSecurityTab
-            onNavigateSection={(sec) => setMainSection(sec as MainSectionType)}
-            onOpenCheckBalance={() => setIsCheckBalanceOpen(true)}
-          />
-        )}
-
-        {/* SECTION 6: TAXSAATHI (PERSONAL AI CA STATUTORY HUB) */}
-        {mainSection === 'tax' && (
-          <div className="space-y-6">
-            {/* Tax Context Subtabs */}
-            <div className="bg-white p-1.5 rounded-2xl border border-[#E2E8F0] shadow-xs flex space-x-1.5 overflow-x-auto no-scrollbar">
-              <button
-                onClick={() => setTaxSubtab('dashboard')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  taxSubtab === 'dashboard'
-                    ? 'bg-[#5F259F] text-white shadow-xs'
-                    : 'text-[#718096] hover:text-[#172033] hover:bg-[#F8F9FC]'
-                }`}
-              >
-                <Scale className="w-3.5 h-3.5 inline mr-1" />
-                <span>Statutory Dashboard & Regimes</span>
-              </button>
-              <button
-                onClick={() => setTaxSubtab('planning')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  taxSubtab === 'planning'
-                    ? 'bg-[#5F259F] text-white shadow-xs'
-                    : 'text-[#718096] hover:text-[#172033] hover:bg-[#F8F9FC]'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5 inline mr-1" />
-                <span>Tax Saving Simulator</span>
-              </button>
-              <button
-                onClick={() => setTaxSubtab('calendar')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  taxSubtab === 'calendar'
-                    ? 'bg-[#5F259F] text-white shadow-xs'
-                    : 'text-[#718096] hover:text-[#172033] hover:bg-[#F8F9FC]'
-                }`}
-              >
-                <Calendar className="w-3.5 h-3.5 inline mr-1" />
-                <span>Tax Calendar & Deadlines</span>
-              </button>
-              <button
-                onClick={() => setTaxSubtab('audit')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  taxSubtab === 'audit'
-                    ? 'bg-[#5F259F] text-white shadow-xs'
-                    : 'text-[#718096] hover:text-[#172033] hover:bg-[#F8F9FC]'
-                }`}
-              >
-                <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
-                <span>Audit & Health ({unresolvedAnomalies})</span>
-              </button>
-              <button
-                onClick={() => setTaxSubtab('docs')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  taxSubtab === 'docs'
-                    ? 'bg-[#5F259F] text-white shadow-xs'
-                    : 'text-[#718096] hover:text-[#172033] hover:bg-[#F8F9FC]'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5 inline mr-1" />
-                <span>Document Intel (Form 16/AIS)</span>
-              </button>
-            </div>
-
-            {taxSubtab === 'dashboard' && (
-              <TaxDashboardTab
-                onNavigateTab={(tab) => setTaxSubtab(tab as any)}
-                onOpenVoiceCa={() => setIsVoiceCaOpen(true)}
-                onSelectTransaction={(id) => setSelectedTxId(id)}
-              />
-            )}
-
-            {taxSubtab === 'planning' && (
-              <TaxPlanningTab />
-            )}
-
-            {taxSubtab === 'calendar' && (
-              <TaxCalendarTab />
-            )}
-
-            {taxSubtab === 'audit' && (
-              <AuditHealthTab
-                onSelectTransaction={(id) => setSelectedTxId(id)}
-              />
-            )}
-
-            {taxSubtab === 'docs' && (
-              <DocumentIntelligenceTab />
-            )}
-          </div>
-        )}
-
-        {/* SECTION 7: AI CA ASSISTANT (CONVERSATIONAL & VOICE) */}
-        {mainSection === 'ai-assistant' && (
-          <TaxAiChatTab
-            onNavigateTab={(tab) => {
-              setMainSection('tax');
-              setTaxSubtab(tab as any);
-            }}
-            onOpenReport={() => setIsReportOpen(true)}
-          />
-        )}
-
-        {/* SECTION 8: FAMILY PROFILES (FAMILY BUDGET MODE) */}
+        {/* SECTION 8: FAMILY PROFILES */}
         {mainSection === 'family' && (
           <FamilyProfilesTab />
         )}
@@ -323,31 +241,37 @@ const MainLayout: React.FC = () => {
         }}
       />
 
+      {/* Privacy Shield Biometric / PIN Authentication Modal */}
+      <BiometricAuthModal />
+
+      {/* Privacy Shield Control Center Modal */}
+      <PrivacyShieldModal />
+
       {/* Footer */}
       <footer className="bg-white dark:bg-[#21152D] border-t border-[#E8E1F2] dark:border-[#3D2854] py-6 text-center text-xs text-slate-500 dark:text-purple-200/60 transition-colors">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="font-extrabold text-[#172033] dark:text-white">TECHPAY</span>
             <span>+ TaxSaathi</span>
-            <span>• Next-Gen Payments & AI CA Platform</span>
+            <span>• Next-Gen Privacy-First Payments & AI CA</span>
           </div>
           <div className="text-[11px] text-slate-400 dark:text-slate-400">
-            Smart UPI • Real-World Geo History • Fixed Budget Lock Vault • Verified Indian Tax Engine
+            TechPay Privacy Shield • Biometric App Lock • Smart Indian UPI • Real-World Geo History
           </div>
         </div>
       </footer>
 
-      {/* SECTION 5: FIXED BOTTOM NAVIGATION (MOBILE ONLY: block md:hidden) */}
+      {/* SECTION 5: FIXED 5-OPTION BOTTOM NAVIGATION (MOBILE ONLY: block md:hidden) */}
       <nav
         aria-label="Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#21152D]/95 backdrop-blur-md border-t border-[#E8E1F2] dark:border-[#3D2854] shadow-[0_-4px_24px_rgba(95,37,159,0.08)] py-1.5 px-3 sm:px-6 block md:hidden transition-colors"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#21152D]/95 backdrop-blur-md border-t border-[#E8E1F2] dark:border-[#3D2854] shadow-[0_-4px_24px_rgba(95,37,159,0.08)] py-1 px-2 sm:px-4 block md:hidden transition-colors"
       >
-        <div className="max-w-md sm:max-w-lg mx-auto flex items-center justify-between">
+        <div className="max-w-md sm:max-w-lg mx-auto grid grid-cols-5 gap-1">
           {/* 1. Home */}
           <button
             type="button"
             onClick={() => setMainSection('home')}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-150 ${
               mainSection === 'home'
                 ? 'text-[#5F259F] dark:text-purple-300 font-black'
                 : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
@@ -362,93 +286,95 @@ const MainLayout: React.FC = () => {
             >
               <Home className="w-5 h-5" />
             </div>
-            <span className="text-[11px] mt-0.5 tracking-tight">Home</span>
+            <span className="text-[10px] mt-0.5 tracking-tight">Home</span>
           </button>
 
-          {/* 2. History */}
+          {/* 2. Payments */}
           <button
             type="button"
-            onClick={() => setMainSection('history')}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
-              mainSection === 'history' || mainSection === 'payments'
+            onClick={() => setMainSection('payments')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-150 ${
+              mainSection === 'payments' || mainSection === 'scan'
                 ? 'text-[#5F259F] dark:text-purple-300 font-black'
                 : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
             }`}
           >
             <div
               className={`p-1.5 rounded-xl transition-all ${
-                mainSection === 'history' || mainSection === 'payments'
+                mainSection === 'payments' || mainSection === 'scan'
+                  ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
+                  : 'text-slate-500 dark:text-purple-200/70'
+              }`}
+            >
+              <ArrowRightLeft className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] mt-0.5 tracking-tight">Payments</span>
+          </button>
+
+          {/* 3. History */}
+          <button
+            type="button"
+            onClick={() => setMainSection('history')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-150 ${
+              mainSection === 'history'
+                ? 'text-[#5F259F] dark:text-purple-300 font-black'
+                : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
+            }`}
+          >
+            <div
+              className={`p-1.5 rounded-xl transition-all ${
+                mainSection === 'history'
                   ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
                   : 'text-slate-500 dark:text-purple-200/70'
               }`}
             >
               <Receipt className="w-5 h-5" />
             </div>
-            <span className="text-[11px] mt-0.5 tracking-tight">History</span>
-          </button>
-
-          {/* 3. SCAN (Centre Visually Prominent Elevated Button) */}
-          <button
-            type="button"
-            onClick={() => setMainSection('scan')}
-            className="flex flex-col items-center justify-center -mt-6 group focus:outline-none"
-          >
-            <div
-              className={`w-14 h-14 rounded-full bg-gradient-to-tr from-[#38146B] to-[#5F259F] text-white flex items-center justify-center shadow-lg shadow-[#5F259F]/40 border-4 border-white dark:border-[#21152D] group-hover:scale-105 active:scale-95 transition-all ${
-                mainSection === 'scan' ? 'ring-2 ring-[#5F259F]' : ''
-              }`}
-            >
-              <QrCode className="w-7 h-7" />
-            </div>
-            <span className={`text-[11px] font-black mt-1 ${
-              mainSection === 'scan' ? 'text-[#5F259F] dark:text-purple-300' : 'text-slate-600 dark:text-purple-200/80'
-            }`}>
-              Scan
-            </span>
+            <span className="text-[10px] mt-0.5 tracking-tight">History</span>
           </button>
 
           {/* 4. Wealth */}
           <button
             type="button"
             onClick={() => setMainSection('wealth')}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
-              mainSection === 'wealth'
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-150 ${
+              mainSection === 'wealth' || mainSection === 'tax' || mainSection === 'budgets' || mainSection === 'expenses'
                 ? 'text-[#5F259F] dark:text-purple-300 font-black'
                 : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
             }`}
           >
             <div
               className={`p-1.5 rounded-xl transition-all ${
-                mainSection === 'wealth'
+                mainSection === 'wealth' || mainSection === 'tax' || mainSection === 'budgets' || mainSection === 'expenses'
                   ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
                   : 'text-slate-500 dark:text-purple-200/70'
               }`}
             >
               <Coins className="w-5 h-5" />
             </div>
-            <span className="text-[11px] mt-0.5 tracking-tight">Wealth</span>
+            <span className="text-[10px] mt-0.5 tracking-tight">Wealth</span>
           </button>
 
           {/* 5. Profile */}
           <button
             type="button"
             onClick={() => setMainSection('profile')}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 ${
-              mainSection === 'profile'
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-150 ${
+              mainSection === 'profile' || mainSection === 'family'
                 ? 'text-[#5F259F] dark:text-purple-300 font-black'
                 : 'text-slate-500 dark:text-purple-200/70 hover:text-slate-900 dark:hover:text-white font-medium'
             }`}
           >
             <div
               className={`p-1.5 rounded-xl transition-all ${
-                mainSection === 'profile'
+                mainSection === 'profile' || mainSection === 'family'
                   ? 'bg-[#F0EAF8] dark:bg-purple-900/60 text-[#5F259F] dark:text-purple-300 shadow-xs'
                   : 'text-slate-500 dark:text-purple-200/70'
               }`}
             >
               <User className="w-5 h-5" />
             </div>
-            <span className="text-[11px] mt-0.5 tracking-tight">Profile</span>
+            <span className="text-[10px] mt-0.5 tracking-tight">Profile</span>
           </button>
         </div>
       </nav>

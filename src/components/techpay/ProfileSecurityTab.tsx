@@ -20,7 +20,14 @@ import {
   Sparkles,
   Users,
   Settings,
-  Receipt
+  Receipt,
+  AlertTriangle,
+  Laptop,
+  Check,
+  Copy,
+  AlertOctagon,
+  Unlock,
+  KeyRound
 } from 'lucide-react';
 
 interface ProfileSecurityTabProps {
@@ -37,18 +44,24 @@ export const ProfileSecurityTab: React.FC<ProfileSecurityTabProps> = ({
     profiles,
     setActiveProfileId,
     accountBalance,
-    isPrivacyMode,
-    togglePrivacyMode,
+    privacyLevel,
+    setPrivacyLevel,
+    privacySettings,
+    updatePrivacySettings,
+    setIsPrivacyShieldModalOpen,
+    lockEmergencyAccount,
+    unlockEmergencyAccount,
+    triggerBiometricAuth,
+    formatPrivateAmount,
+    formatMaskedAccount,
+    formatMaskedUpi,
     isBalanceRevealed,
-    autoPayMandates,
-    commitments,
-    formatPrivateAmount
+    theme
   } = useApp();
 
-  const [biometricEnabled, setBiometricEnabled] = useState(true);
-  const [smsAlerts, setSmsAlerts] = useState(true);
-  const [whatsappAlerts, setWhatsappAlerts] = useState(true);
-  const [upiDailyLimit, setUpiDailyLimit] = useState(100000);
+  const isDark = theme === 'dark';
+
+  const [copiedUpi, setCopiedUpi] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState<string | null>(null);
 
   const triggerToast = (msg: string) => {
@@ -56,8 +69,29 @@ export const ProfileSecurityTab: React.FC<ProfileSecurityTabProps> = ({
     setTimeout(() => setShowSuccessToast(null), 3000);
   };
 
+  const handleCopyUpi = () => {
+    navigator.clipboard?.writeText(activeProfile.upiId);
+    setCopiedUpi(true);
+    triggerToast('Primary UPI ID copied to clipboard');
+    setTimeout(() => setCopiedUpi(false), 2000);
+  };
+
+  const handleEmergencyToggle = () => {
+    if (!privacySettings.isEmergencyLocked) {
+      if (window.confirm('🚨 EMERGENCY ACCOUNT FREEZE: This will immediately block all outgoing UPI payments, mask all balances, and freeze digital transactions. Continue?')) {
+        lockEmergencyAccount();
+        triggerToast('Account emergency frozen successfully');
+      }
+    } else {
+      triggerBiometricAuth('Verify Identity to Unfreeze Account', () => {
+        unlockEmergencyAccount();
+        triggerToast('Account unfreezed successfully');
+      });
+    }
+  };
+
   return (
-    <div className="space-y-6 pb-20 animate-fadeIn">
+    <div className="space-y-6 pb-20 animate-fadeIn max-w-4xl mx-auto">
       {/* Toast Notification */}
       {showSuccessToast && (
         <div className="fixed top-20 right-4 z-50 bg-[#16A36A] text-white px-4 py-2.5 rounded-2xl shadow-lg flex items-center gap-2 text-xs font-bold animate-fadeIn">
@@ -66,35 +100,68 @@ export const ProfileSecurityTab: React.FC<ProfileSecurityTabProps> = ({
         </div>
       )}
 
-      {/* Header Profile Card - Royal Purple Gradient */}
-      <div className="bg-gradient-to-r from-[#38146B] via-[#5F259F] to-[#7A38BE] text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+      {/* Emergency Freeze Banner */}
+      {privacySettings.isEmergencyLocked && (
+        <div className="p-4 rounded-3xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500 text-rose-950 dark:text-rose-100 flex items-start justify-between gap-3 animate-pulse">
+          <div className="flex items-start gap-2.5">
+            <AlertOctagon className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-black text-rose-900 dark:text-rose-200 uppercase tracking-wider">
+                Emergency Account Freeze Active
+              </h4>
+              <p className="text-xs text-rose-800 dark:text-rose-300">
+                All outgoing UPI transfers and PIN authorisations are frozen. Balances are masked.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleEmergencyToggle}
+            className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shrink-0 flex items-center gap-1 shadow-md shadow-rose-600/30"
+          >
+            <Unlock className="w-3.5 h-3.5" />
+            <span>Unfreeze Account</span>
+          </button>
+        </div>
+      )}
+
+      {/* Header Profile Card */}
+      <div className="bg-gradient-to-r from-[#35145F] via-[#5F259F] to-[#7A38BE] text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-white/5 blur-2xl rounded-full pointer-events-none"></div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-2xl ${activeProfile.avatarColor} text-white flex items-center justify-center font-black text-2xl shadow-lg border-2 border-white/20`}>
+            <div className={`w-16 h-16 rounded-2xl ${activeProfile.avatarColor} text-white flex items-center justify-center font-black text-2xl shadow-lg border-2 border-white/20 shrink-0`}>
               {activeProfile.name.charAt(0)}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-black text-white">{activeProfile.name}</h1>
-                <span className="px-2 py-0.5 rounded-full bg-[#16A36A] text-white text-[10px] font-bold flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#16A36A] text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
                   <ShieldCheck className="w-3 h-3" />
                   <span>KYC Verified</span>
                 </span>
               </div>
-              <p className="text-xs text-purple-200 mt-0.5 font-mono">
-                Primary UPI ID: {activeProfile.upiId}
-              </p>
+              <div className="flex items-center gap-2 mt-1 font-mono text-xs text-purple-200">
+                <span>UPI ID: {formatMaskedUpi(activeProfile.upiId)}</span>
+                <button
+                  type="button"
+                  onClick={handleCopyUpi}
+                  className="p-1 hover:text-white text-purple-300 transition-colors"
+                  title="Copy UPI ID"
+                >
+                  {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
               <div className="flex items-center gap-2 mt-2 flex-wrap text-[11px] text-purple-200">
-                <span className="bg-white/10 px-2 py-0.5 rounded border border-white/10">
-                  PAN: {activeProfile.pan}
+                <span className="bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/10">
+                  PAN: {activeProfile.pan.slice(0, 3)}••••{activeProfile.pan.slice(-2)}
                 </span>
-                <span className="bg-white/10 px-2 py-0.5 rounded border border-white/10">
+                <span className="bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/10">
                   {activeProfile.employmentType.replace('_', ' ')}
                 </span>
-                <span className="bg-white/10 px-2 py-0.5 rounded border border-white/10">
-                  {activeProfile.defaultRegime} Regime
+                <span className="bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/10">
+                  {activeProfile.defaultRegime} Tax Regime
                 </span>
               </div>
             </div>
@@ -103,7 +170,7 @@ export const ProfileSecurityTab: React.FC<ProfileSecurityTabProps> = ({
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
               onClick={() => onNavigateSection('family')}
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
+              className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
             >
               <Users className="w-4 h-4" />
               <span>Switch Family Profile</span>
@@ -112,353 +179,198 @@ export const ProfileSecurityTab: React.FC<ProfileSecurityTabProps> = ({
         </div>
       </div>
 
-      {/* Linked Bank Accounts (PhonePe Style Dedicated Interface) */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#5F259F]" />
-              <span>Linked Bank Accounts & Balance Interface</span>
-            </h3>
-            <p className="text-xs text-slate-500">
-              Accounts verified through NPCI 2-factor authentication switch • Never stores PIN
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-[#5F259F] bg-[#F0EAF8] px-2.5 py-1 rounded-full">
-              3 Accounts Linked
-            </span>
-            <button
-              onClick={() => triggerToast('Select your bank to link via NPCI OTP verification')}
-              className="px-3 py-1 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors flex items-center gap-1"
-            >
-              <span>+ Add Bank</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {/* Account 1: HDFC Bank (Primary) */}
-          <div className="p-4 rounded-2xl border-2 border-[#5F259F]/30 bg-[#F7F6FA] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-xl shadow-xs shrink-0">
-                🏦
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-bold text-slate-900">HDFC Bank Limited</h4>
-                  <span className="px-2 py-0.2 rounded bg-[#5F259F] text-white text-[9px] font-bold">
-                    PRIMARY UPI
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Savings A/c •••• 4892 • IFSC: HDFC0001042 • Branch: Indiranagar, BLR
-                </p>
-                <div className="text-[11px] text-[#16A36A] font-semibold flex items-center gap-1 mt-0.5">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>UPI Autopay & IMPS Active • VPA: rahul.techpay@hdfcbank</span>
-                </div>
-                {isBalanceRevealed && (
-                  <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-1.5 font-mono">
-                    <Clock className="w-3 h-3 text-slate-400" />
-                    <span>Last updated: Today at 09:12 PM</span>
-                  </div>
-                )}
-              </div>
+      {/* TECHPAY PRIVACY SHIELD CONTROL CENTER TRIGGER */}
+      <div className="bg-white dark:bg-[#21152D] rounded-3xl border border-[#E8E1F2] dark:border-[#3D2854] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 border-purple-100 dark:border-purple-900/30">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#5F259F] text-white flex items-center justify-center shadow-md shadow-[#5F259F]/20 shrink-0">
+              <Shield className="w-6 h-6" />
             </div>
-
-            <div className="flex items-center gap-2 self-end sm:self-center">
-              {isBalanceRevealed ? (
-                <div className="text-right">
-                  <span className="text-[10px] text-slate-400 block uppercase font-bold">Available Balance</span>
-                  <div className="text-lg font-black text-slate-900">
-                    {formatPrivateAmount(accountBalance, true)}
-                  </div>
-                  <button
-                    onClick={onOpenCheckBalance}
-                    className="text-[10px] text-[#5F259F] font-bold hover:underline"
-                  >
-                    Refresh Balance
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={onOpenCheckBalance}
-                  className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
-                >
-                  <Lock className="w-3.5 h-3.5 text-[#5F259F]" />
-                  <span>Check Balance</span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Account 2: ICICI Bank */}
-          <div className="p-4 rounded-2xl border border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-colors">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-xl shadow-xs shrink-0">
-                🏢
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-bold text-slate-900">ICICI Bank Limited</h4>
-                  <span className="px-2 py-0.2 rounded bg-slate-100 text-slate-600 text-[9px] font-bold">
-                    SALARY A/C
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Salary A/c •••• 1084 • IFSC: ICIC0000021 • Branch: Koramangala, BLR
-                </p>
-                <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                  <span>Linked UPI VPA: rahul@icici</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-end sm:self-center">
-              <button
-                onClick={onOpenCheckBalance}
-                className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <Lock className="w-3.5 h-3.5 text-slate-600" />
-                <span>Check Balance</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Account 3: State Bank of India */}
-          <div className="p-4 rounded-2xl border border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-colors">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-xl shadow-xs shrink-0">
-                🏛️
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-bold text-slate-900">State Bank of India (SBI)</h4>
-                  <span className="px-2 py-0.2 rounded bg-slate-100 text-slate-600 text-[9px] font-bold">
-                    SAVINGS
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Savings A/c •••• 9211 • IFSC: SBIN0004521 • Branch: MG Road, BLR
-                </p>
-                <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                  <span>Linked UPI VPA: 9876543210@sbi</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-end sm:self-center">
-              <button
-                onClick={onOpenCheckBalance}
-                className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <Lock className="w-3.5 h-3.5 text-slate-600" />
-                <span>Check Balance</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Payment Security & Privacy Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Security & Limits */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
-          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-[#5F259F]" />
-            <span>Transaction Security & Limits</span>
-          </h3>
-
-          <div className="space-y-3 text-xs">
-            {/* Daily UPI Limit Slider */}
-            <div className="p-3.5 rounded-2xl bg-[#F7F6FA] border border-slate-200 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-slate-700">Daily UPI Spending Limit</span>
-                <span className="font-extrabold text-[#5F259F] text-sm">₹{upiDailyLimit.toLocaleString('en-IN')}</span>
-              </div>
-              <input
-                type="range"
-                min="10000"
-                max="100000"
-                step="5000"
-                value={upiDailyLimit}
-                onChange={(e) => {
-                  setUpiDailyLimit(Number(e.target.value));
-                  triggerToast(`Daily UPI Limit set to ₹${Number(e.target.value).toLocaleString('en-IN')}`);
-                }}
-                className="w-full accent-[#5F259F] cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-slate-400">
-                <span>₹10,000 (Conservative)</span>
-                <span>₹1,00,000 (NPCI Max)</span>
-              </div>
-            </div>
-
-            {/* Biometric App Lock */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F7F6FA] border border-slate-200">
-              <div>
-                <div className="font-bold text-slate-800">Biometric / Fingerprint Lock</div>
-                <div className="text-[11px] text-slate-500">Require FaceID or Fingerprint before viewing balances</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setBiometricEnabled(!biometricEnabled);
-                  triggerToast(biometricEnabled ? 'Biometric security disabled' : 'Biometric security enabled');
-                }}
-                className={`w-11 h-6 rounded-full transition-colors relative flex items-center ${biometricEnabled ? 'bg-[#5F259F]' : 'bg-slate-300'
-                  }`}
-              >
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-extrabold text-[#172033] dark:text-white">
+                  TechPay Privacy Shield
+                </h3>
                 <span
-                  className={`w-4 h-4 rounded-full bg-white transition-transform transform shadow-sm ${biometricEnabled ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                />
-              </button>
-            </div>
-
-            {/* UPI PIN Note */}
-            <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 text-[11px] space-y-1">
-              <div className="font-bold flex items-center gap-1.5 text-amber-900">
-                <Key className="w-3.5 h-3.5" />
-                <span>Zero-Knowledge PIN Architecture</span>
+                  className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                    privacyLevel === 'SECURE'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                      : privacyLevel === 'PRIVACY'
+                      ? 'bg-purple-500/10 text-[#5F259F] dark:text-purple-300 border border-purple-500/20'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {privacyLevel} Level
+                </span>
               </div>
-              <p className="text-slate-600">
-                TechPay never stores or logs your 4-digit or 6-digit UPI PINs. All PIN inputs are encrypted end-to-end via the NPCI UPI switch.
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Anti-shoulder-surfing protection, automatic balance masking, and biometric app lock.
               </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsPrivacyShieldModalOpen(true)}
+            className="px-4 py-2.5 rounded-2xl bg-[#5F259F] hover:bg-[#4E1E82] text-white font-extrabold text-xs shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2"
+          >
+            <span>Open Privacy Shield Settings</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        {/* Privacy & Alerts */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
-          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-            <Eye className="w-4 h-4 text-[#5F259F]" />
-            <span>Privacy & Notification Settings</span>
-          </h3>
-
-          <div className="space-y-3 text-xs">
-            {/* Global Privacy Shield */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F7F6FA] border border-slate-200">
-              <div>
-                <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <span>Privacy Shield Mode</span>
-                  <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded">
-                    PhonePe / GPay Style
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  Masks bank balance and loan EMI amounts in public spaces
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={togglePrivacyMode}
-                className={`w-11 h-6 rounded-full transition-colors relative flex items-center ${isPrivacyMode ? 'bg-[#5F259F]' : 'bg-slate-300'
-                  }`}
-              >
-                <span
-                  className={`w-4 h-4 rounded-full bg-white transition-transform transform shadow-sm ${isPrivacyMode ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                />
-              </button>
-            </div>
-
-            {/* Instant SMS Alerts */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F7F6FA] border border-slate-200">
-              <div>
-                <div className="font-bold text-slate-800">SMS Transaction Receipts</div>
-                <div className="text-[11px] text-slate-500">Receive free SMS for every credit & debit</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSmsAlerts(!smsAlerts)}
-                className={`w-11 h-6 rounded-full transition-colors relative flex items-center ${smsAlerts ? 'bg-[#5F259F]' : 'bg-slate-300'
-                  }`}
-              >
-                <span
-                  className={`w-4 h-4 rounded-full bg-white transition-transform transform shadow-sm ${smsAlerts ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                />
-              </button>
-            </div>
-
-            {/* WhatsApp Bill Reminders */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F7F6FA] border border-slate-200">
-              <div>
-                <div className="font-bold text-slate-800">WhatsApp Due Date Reminders</div>
-                <div className="text-[11px] text-slate-500">3-day advance notice for upcoming EMI & utility bills</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setWhatsappAlerts(!whatsappAlerts)}
-                className={`w-11 h-6 rounded-full transition-colors relative flex items-center ${whatsappAlerts ? 'bg-[#5F259F]' : 'bg-slate-300'
-                  }`}
-              >
-                <span
-                  className={`w-4 h-4 rounded-full bg-white transition-transform transform shadow-sm ${whatsappAlerts ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Account Activity & Statements */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
-        <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-          <Download className="w-4 h-4 text-[#5F259F]" />
-          <span>Statements & Activity Reports</span>
-        </h3>
-
+        {/* Quick Toggles Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <button
-            onClick={() => triggerToast('Annual Transaction Statement generated (PDF ready)')}
-            className="p-3.5 rounded-2xl border border-slate-200 hover:border-[#5F259F] text-left hover:bg-[#F0EAF8]/40 transition-all space-y-1"
-          >
-            <div className="font-bold text-slate-900">Monthly Statement</div>
-            <p className="text-[11px] text-slate-500">November 2026 PDF with GST breakdown</p>
-          </button>
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-purple-950/20 border border-slate-200 dark:border-purple-900/30 space-y-1">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Balance Masking</span>
+            <div className="font-extrabold text-slate-800 dark:text-white">
+              {privacySettings.hideBalanceByDefault ? '✓ Hidden by Default' : 'Visible'}
+            </div>
+            <p className="text-[10px] text-slate-400">Eye icon required to reveal balance</p>
+          </div>
 
-          <button
-            onClick={() => onNavigateSection('tax')}
-            className="p-3.5 rounded-2xl border border-slate-200 hover:border-[#5F259F] text-left hover:bg-[#F0EAF8]/40 transition-all space-y-1"
-          >
-            <div className="font-bold text-slate-900">ITR Ready Computation Sheet</div>
-            <p className="text-[11px] text-slate-500">Sec 115BAC verified computation</p>
-          </button>
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-purple-950/20 border border-slate-200 dark:border-purple-900/30 space-y-1">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Biometric App Lock</span>
+            <div className="font-extrabold text-slate-800 dark:text-white">
+              {privacySettings.requireBiometricForSensitive ? '✓ Active (Fingerprint/PIN)' : 'Disabled'}
+            </div>
+            <p className="text-[10px] text-slate-400">Enforced for statements & TaxSaathi</p>
+          </div>
 
-          <button
-            onClick={() => onNavigateSection('payments')}
-            className="p-3.5 rounded-2xl border border-slate-200 hover:border-[#5F259F] text-left hover:bg-[#F0EAF8]/40 transition-all space-y-1"
-          >
-            <div className="font-bold text-slate-900">AutoPay Mandates Summary</div>
-            <p className="text-[11px] text-slate-500">{autoPayMandates.length} active recurring mandates</p>
-          </button>
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-purple-950/20 border border-slate-200 dark:border-purple-900/30 space-y-1">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Auto-Lock Timeout</span>
+            <div className="font-extrabold text-slate-800 dark:text-white">
+              {privacySettings.autoLockTimeoutSeconds === 0 ? 'Immediate on blur' : `${privacySettings.autoLockTimeoutSeconds} Seconds`}
+            </div>
+            <p className="text-[10px] text-slate-400">Auto-hides sensitive values</p>
+          </div>
         </div>
       </div>
 
-      {/* Help & 24x7 Support */}
-      <div className="bg-[#F0EAF8] border border-[#5F259F]/20 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-[#5F259F] text-white flex items-center justify-center font-bold">
-            <HelpCircle className="w-5 h-5" />
-          </div>
+      {/* Linked Bank Accounts */}
+      <div className="bg-white dark:bg-[#21152D] rounded-3xl border border-[#E8E1F2] dark:border-[#3D2854] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-purple-100 dark:border-purple-900/30">
           <div>
-            <h4 className="text-sm font-bold text-[#38146B]">24x7 Customer Grievance & NPCI Helpdesk</h4>
-            <p className="text-xs text-slate-600">Instant resolution for failed UPI transactions & refund tracking</p>
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#5F259F]" />
+              <span>Linked Bank Accounts & UPI Mandates</span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Verified through NPCI UPI Payment Gateway. Primary debit account for transfers.
+            </p>
           </div>
+
+          <button
+            type="button"
+            onClick={onOpenCheckBalance}
+            className="px-3.5 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-[#5F259F] dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800 hover:bg-purple-100 transition-colors self-start sm:self-auto"
+          >
+            Check Balance via PIN
+          </button>
+        </div>
+
+        {/* Bank Card */}
+        <div className="p-4 rounded-2xl border border-slate-200 dark:border-purple-900/30 bg-slate-50/50 dark:bg-purple-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#004C8F] text-white flex items-center justify-center font-black text-sm shrink-0">
+              HDFC
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                  HDFC Bank Limited
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                  Primary Account
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5 font-mono">
+                Savings A/C •••• 4892 • IFSC: HDFC0001234
+              </div>
+            </div>
+          </div>
+
+          <div className="text-left sm:text-right">
+            <div className="text-xs text-slate-400 font-medium">Available Balance</div>
+            <div className="text-base font-black text-slate-900 dark:text-white font-mono mt-0.5">
+              {formatPrivateAmount(accountBalance, isBalanceRevealed)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Logged-In Devices & Security Sessions */}
+      <div className="bg-white dark:bg-[#21152D] rounded-3xl border border-[#E8E1F2] dark:border-[#3D2854] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b pb-3 border-purple-100 dark:border-purple-900/30">
+          <div className="flex items-center gap-2">
+            <Laptop className="w-4 h-4 text-[#5F259F]" />
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+              Device Management & Login Alerts
+            </h3>
+          </div>
+          <span className="text-[10px] text-emerald-600 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+            2 Active Devices
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-purple-950/20 border border-slate-200 dark:border-purple-900/30 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-3">
+              <Laptop className="w-5 h-5 text-indigo-600" />
+              <div>
+                <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>Windows 11 Workstation (This Device)</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-600 text-white font-black">CURRENT</span>
+                </div>
+                <div className="text-[11px] text-slate-400">Chrome 131 • Bengaluru, India • Active now</div>
+              </div>
+            </div>
+            <span className="text-emerald-600 font-bold text-[11px]">Secure Enclave</span>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-purple-950/20 border border-slate-200 dark:border-purple-900/30 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-3">
+              <Smartphone className="w-5 h-5 text-purple-600" />
+              <div>
+                <div className="font-bold text-slate-900 dark:text-white">iPhone 15 Pro (Mobile UPI App)</div>
+                <div className="text-[11px] text-slate-400">iOS 18.1 • Face ID Enabled • Last active 2 hours ago</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => triggerToast('Logged out iPhone session successfully')}
+              className="text-xs font-bold text-rose-600 hover:underline"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Emergency Account Freeze Killswitch Card */}
+      <div className="p-5 rounded-3xl bg-rose-50/70 dark:bg-rose-950/20 border-2 border-rose-300 dark:border-rose-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h4 className="text-sm font-black text-rose-950 dark:text-rose-200 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-600" />
+            <span>Emergency Killswitch: Freeze All UPI Payments</span>
+          </h4>
+          <p className="text-xs text-rose-900/80 dark:text-rose-300 mt-1 max-w-lg leading-relaxed">
+            In case your phone or device is lost, you can instantly lock your account to block any unauthorized debits or transactions across all channels.
+          </p>
         </div>
 
         <button
-          onClick={() => triggerToast('Help ticket created. Support agent connecting in 60 seconds.')}
-          className="px-4 py-2 rounded-xl bg-[#5F259F] hover:bg-[#38146B] text-white font-bold text-xs transition-colors whitespace-nowrap self-start sm:self-auto"
+          type="button"
+          onClick={handleEmergencyToggle}
+          className={`px-5 py-2.5 rounded-2xl text-xs font-extrabold shadow-md active:scale-95 transition-all shrink-0 ${
+            privacySettings.isEmergencyLocked
+              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+              : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/30'
+          }`}
         >
-          Contact 24x7 Support
+          {privacySettings.isEmergencyLocked ? 'Unfreeze Account' : 'Freeze Account Now'}
         </button>
       </div>
     </div>
   );
 };
-
