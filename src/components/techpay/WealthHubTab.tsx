@@ -156,3 +156,4 @@ export const WealthHubTab: React.FC<WealthHubTabProps> = ({
     </div>
   );
 };
+

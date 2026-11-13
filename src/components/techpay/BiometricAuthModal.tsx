@@ -232,3 +232,4 @@ export const BiometricAuthModal: React.FC = () => {
     </div>
   );
 };
+

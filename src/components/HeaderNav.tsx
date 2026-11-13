@@ -24,7 +24,8 @@ import {
   Moon,
   Sparkles,
   ArrowRightLeft,
-  Shield
+  Shield,
+  Send
 } from 'lucide-react';
 import { NotificationsModal } from './techpay/NotificationsModal';
 import { HelpSupportModal } from './techpay/HelpSupportModal';
@@ -183,6 +184,17 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {/* RIGHT: Privacy Shield, QR, Notifications, Help & Theme      */}
           {/* ============================================================ */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Direct Send Money Button */}
+            <button
+              type="button"
+              onClick={onOpenMakePayment}
+              className="px-3 py-1.5 rounded-full bg-[#6936F5] hover:bg-[#5B25E6] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#6936F5]/20 transition-all active:scale-95 cursor-pointer"
+              title="Send Money via UPI"
+            >
+              <Send className="w-3.5 h-3.5 -rotate-12" />
+              <span className="hidden sm:inline">Send Money</span>
+            </button>
+
             {/* TechPay Privacy Shield Pill Button */}
             <button
               type="button"

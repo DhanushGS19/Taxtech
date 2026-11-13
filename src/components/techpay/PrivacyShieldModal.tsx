@@ -426,3 +426,4 @@ export const PrivacyShieldModal: React.FC = () => {
     </div>
   );
 };
+

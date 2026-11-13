@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import {
   QrCode,
   Smartphone,
+  CreditCard,
   Building2,
   Send,
   ArrowDownLeft,
@@ -311,6 +312,30 @@ export const PaymentHome: React.FC<PaymentHomeProps> = ({
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {/* Featured Direct "Send Money via UPI" Banner */}
+        <button
+          type="button"
+          onClick={() => onOpenMakePayment()}
+          className="w-full p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#6936F5] via-[#7C3AED] to-[#8B5CF6] text-white flex items-center justify-between shadow-md shadow-[#6936F5]/25 hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <CreditCard className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <div className="font-extrabold text-sm flex items-center gap-2">
+                <span>Send Money via UPI</span>
+                <span className="text-[10px] bg-white/25 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">Active</span>
+              </div>
+              <div className="text-[11px] text-purple-100">With Location History & Tax Tracking</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 font-bold text-xs bg-white text-[#6936F5] px-3.5 py-1.5 rounded-full shadow-xs shrink-0 group-hover:bg-purple-50 transition-colors">
+            <span>Open</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </div>
+        </button>
 
         {/* 4 Prominent Payment Actions */}
         <div className="grid grid-cols-4 gap-2 sm:gap-4 text-center pt-1">
